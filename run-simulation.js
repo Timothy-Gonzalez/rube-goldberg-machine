@@ -90,14 +90,14 @@ function init() {
 
         //First fix camera
         let change = [0, 0];
-        for (keyName in keys) {
+        for (let keyName in keys) {
             let keyData = keys[keyName];
             if (keyData.active) {
                 change[0] += keyData.offset[0];
                 change[1] += keyData.offset[1];
             }
         }
-        //console.log(change)
+
         const timeAcrossScreen = 1; //Time it takes to go across one full screen
         let cameraSpeed = baseW * (1 / timeAcrossScreen / 60) * Camera.scale;
 
