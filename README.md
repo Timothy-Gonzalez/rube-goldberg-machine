@@ -1,5 +1,5 @@
 ## Rube Goldberg Machine
-Made by Timothy, Jay, and Ronit ...
+Made by Timothy, Ronit, Jay
 
 Useful Links:
 * https://brm.io/matter-js/
