@@ -10,7 +10,13 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ea535bb5-4346-4c80-9407-9470bce970f0" name="Default Changelist" comment="" />
+    <list default="true" id="ea535bb5-4346-4c80-9407-9470bce970f0" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/matter.js" beforeDir="false" afterPath="$PROJECT_DIR$/lib/matter.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/run-simulation.js" beforeDir="false" afterPath="$PROJECT_DIR$/run-simulation.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/style.css" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -39,6 +45,9 @@
     <property name="vue.rearranger.settings.migration" value="true" />
   </component>
   <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\School\Desktop\Mobile App Dev\GitHub\rube-goldberg-machine\lib" />
+    </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\School\Desktop\Mobile App Dev\GitHub\rube-goldberg-machine" />
     </key>
@@ -52,6 +61,11 @@
       <option name="presentableId" value="Default" />
       <updated>1604672681601</updated>
       <workItem from="1604672682884" duration="4718000" />
+      <workItem from="1606235604737" duration="1299000" />
+      <workItem from="1606237265827" duration="408000" />
+      <workItem from="1606242960476" duration="46000" />
+      <workItem from="1606245467229" duration="793000" />
+      <workItem from="1606246661648" duration="74000" />
     </task>
     <servers />
   </component>
@@ -69,5 +83,11 @@
       </map>
     </option>
     <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="740" y="274" key="FileChooserDialogImpl" timestamp="1606246258482">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="740" y="274" key="FileChooserDialogImpl/0.0.1920.1040@0.0.1920.1040" timestamp="1606246258482" />
   </component>
 </project>

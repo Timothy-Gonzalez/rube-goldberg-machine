@@ -1,26 +1,41 @@
-const baseW = 800, baseH = 450; //The base size to use for dynamic scaling
-const windowW = window.innerWidth, windowH = window.innerHeight; //Define window height
+/**
+ * Scroll to line
+ *
+ * The code below is just for structure, ignore it unless you absolutely need too
+ **/
+const baseW = 1000, baseH = 500; //The base size to use for dynamic scaling
+const constWindowWidth = window.innerWidth, constWindowHeight = window.innerHeight; //Define window height
 
-const actualPadding = windowW * (0.005); //The padding to use on every side
-const actualW = windowW - (actualPadding * 2); //The actual width to use
-const actualH = windowH - (actualPadding * 2); //The actual height to use
+const constActualPaddingToUse = constWindowWidth * (0.005); //The padding to use on every side
 
 
 //Define all required components, I.E. Engine is Matter.Engine, Render is Matter.Render, ect.
-let Engine = Matter.Engine,
-    Render = Matter.Render,
-    Composites = Matter.Composites,
+let Axes = Matter.Axes,
+    Bodies = Matter.Bodies,
+    Body = Matter.Body,
+    Bounds = Matter.Bounds,
     Common = Matter.Common,
-    MouseConstraint = Matter.MouseConstraint,
+    Composite = Matter.Composite,
+    Composites = Matter.Composites,
+    Constraint = Matter.Constraint,
+    Contact = Matter.Contact,
+    Detector = Matter.Detector,
+    Engine = Matter.Engine,
+    Events = Matter.Events,
+    Grid = Matter.Grid,
     Mouse = Matter.Mouse,
-    World = Matter.World,
-    Bodies = Matter.Bodies;
-
-let render, engine, world; //These need to be accessed outside of init
-
+    MouseConstraint = Matter.MouseConstraint,
+    Render = Matter.Render,
+    Resolver = Matter.Resolver,
+    Runner = Matter.Runner,
+    Sleeping = Matter.Sleeping,
+    Svg = Matter.Svg,
+    Vector = Matter.Vector,
+    Vertices = Matter.Vertices,
+    World = Matter.World;
 
 /* Camera Control */
-let keys = {
+let keyInputData = {
     up: {
         active: false,
         offset: [0, -1],
@@ -42,131 +57,10 @@ let keys = {
 
 let Camera = {
     //Define base camera x and y
-    x: baseW * 0.5,
-    y: baseH * 0.5,
+    x: 0,
+    y: 0,
     scale: 1,
 };
-
-//Centers at Camera.x, Camera.y, then applys scale factor of Camera.scale
-function updateViewport() {
-    let widthPad = baseW * 0.5 * Camera.scale;
-    let heightPad = baseH * 0.5 * Camera.scale;
-    Render.lookAt(render, {
-        min: {x: Camera.x - widthPad, y: Camera.y - heightPad},
-        max: {x: Camera.x + widthPad, y: Camera.y + heightPad},
-    })
-}
-/*-----------------------------------------------------*/
-
-//Initializes canvas with matter.js
-function init() {
-    //We can only setup the canvas once it loads in, so we need to do so in the init function
-    const canvas = document.getElementById("canvas");
-
-
-    // create engine
-    engine = Engine.create(),
-        world = engine.world;
-
-    // create renderer
-    render = Render.create({
-        canvas: canvas,
-        engine: engine,
-        options: {
-            width: actualW,
-            height: actualH,
-            wireframes: false, //Turn this to true for even more debugging
-            showAngleIndicator: false, //When true, shows angle indicator, useful for debugging & such
-        }
-    });
-
-
-    //Sets up the render to run every animation frame
-    Render.run(render);
-
-    //Create custom runner
-    (function run() {
-        window.requestAnimationFrame(run);
-
-        //First fix camera
-        let change = [0, 0];
-        for (let keyName in keys) {
-            let keyData = keys[keyName];
-            if (keyData.active) {
-                change[0] += keyData.offset[0];
-                change[1] += keyData.offset[1];
-            }
-        }
-
-        const timeAcrossScreen = 1; //Time it takes to go across one full screen
-        let cameraSpeed = baseW * (1 / timeAcrossScreen / 60) * Camera.scale;
-
-        if (change[0] !== 0 || change[1] !== 0) { //If camera is updated, change viewport
-            Camera.x += change[0] * cameraSpeed;
-            Camera.y += change[1] * cameraSpeed;
-            updateViewport()
-        }
-        Engine.update(engine, 1000 / 60);
-    })();
-
-    // add bodies
-    var stack = Composites.stack(20, 20, 10, 5, 0, 0, function (x, y) {
-        var sides = Math.round(Common.random(1, 8));
-
-        // triangles can be a little unstable, so avoid until fixed
-        sides = (sides === 3) ? 4 : sides;
-
-        // round the edges of some bodies
-        var chamfer = null;
-        if (sides > 2 && Common.random() > 0.7) {
-            chamfer = {
-                radius: 10
-            };
-        }
-
-        switch (Math.round(Common.random(0, 1))) {
-            case 0:
-                if (Common.random() < 0.8) {
-                    return Bodies.rectangle(x, y, Common.random(25, 50), Common.random(25, 50), {chamfer: chamfer});
-                } else {
-                    return Bodies.rectangle(x, y, Common.random(80, 120), Common.random(25, 30), {chamfer: chamfer});
-                }
-            case 1:
-                return Bodies.polygon(x, y, sides, Common.random(25, 50), {chamfer: chamfer});
-        }
-    });
-
-    World.add(world, stack);
-
-    let thickness = 15;
-    World.add(world, [
-        // walls
-        Bodies.rectangle(baseW * 0.5, thickness * 0.5, baseW, thickness, {isStatic: true}),
-        Bodies.rectangle(baseW * 0.5, baseH - (thickness * 0.5), baseW, thickness, {isStatic: true}),
-        Bodies.rectangle(baseW - (thickness * 0.5), baseH * 0.5, thickness, baseH, {isStatic: true}),
-        Bodies.rectangle(thickness * 0.5, baseH * 0.75, thickness, baseH * 0.5, {isStatic: true})
-    ]);
-
-    // add mouse control
-    var mouse = Mouse.create(render.canvas),
-        mouseConstraint = MouseConstraint.create(engine, {
-            mouse: mouse,
-            constraint: {
-                stiffness: 0.2,
-                render: {
-                    visible: true, //Set to true to see the mouse's force
-                }
-            }
-        });
-
-    World.add(world, mouseConstraint);
-
-    // keep the mouse in sync with rendering
-    render.mouse = mouse;
-
-    // Fit render camera
-    updateViewport(Camera)
-}
 
 /* Detect inputs */
 
@@ -175,19 +69,19 @@ function simpleKeyPress(key, pressed) {
     switch (key) {
         case 'w':
         case 'ArrowUp':
-            keys.up.active = pressed;
+            keyInputData.up.active = pressed;
             break;
         case 's':
         case 'ArrowDown':
-            keys.down.active = pressed;
+            keyInputData.down.active = pressed;
             break;
         case 'a':
         case 'ArrowLeft':
-            keys.left.active = pressed;
+            keyInputData.left.active = pressed;
             break;
         case 'd':
         case 'ArrowRight':
-            keys.right.active = pressed;
+            keyInputData.right.active = pressed;
             break;
     }
 }
@@ -205,10 +99,121 @@ document.addEventListener("wheel", event => {
     let zoomThresh = 0.85;
     if (event.deltaY !== 0) {
         if (event.deltaY > 0) {
-            Camera.scale *= (1 / zoomThresh);
-        } else {
             Camera.scale *= (zoomThresh);
+        } else {
+            Camera.scale *= (1 / zoomThresh);
         }
-        updateViewport(Camera)
     }
 })
+
+let runBefore = false;
+let world;
+function setup() {
+    if (runBefore) {
+        return
+    }
+    runBefore = true;
+    console.log("Running setup")
+    let actualW = constWindowWidth - (constActualPaddingToUse * 2); //The actual width to use
+    let actualH = constWindowHeight - (constActualPaddingToUse * 2); //The actual height to use
+    createCanvas(actualW, actualH)
+    let engine = Engine.create();
+    world = engine.world;
+    console.log("Running init")
+    init();
+    console.log("Running engine, started")
+    Engine.run(engine);
+}
+
+function draw() {
+    let change = [0, 0];
+    for (let keyName in keyInputData) {
+        let keyData = keyInputData[keyName];
+        if (keyData.active) {
+            change[0] += keyData.offset[0];
+            change[1] += keyData.offset[1];
+        }
+    }
+
+    const timeAcrossScreen = 1; //Time it takes to go across one full screen
+    let cameraSpeed = baseW * (1 / timeAcrossScreen / 60) * Camera.scale;
+
+    if (change[0] !== 0 || change[1] !== 0) { //If camera is updated, change viewport
+        Camera.x += change[0] * cameraSpeed;
+        Camera.y += change[1] * cameraSpeed;
+    }
+
+    background(51);
+    let scaleFactor = Camera.scale * (constWindowWidth / baseW);
+
+    let offsetX = Camera.x * scaleFactor;
+    let offsetY = Camera.y * scaleFactor;
+
+    let objects = world.bodies;
+    for (let obj of objects) { //For each
+        push();
+        translate(-offsetX, -offsetY);
+        scale(scaleFactor);
+
+        if (!obj.show) {
+            fill(obj.render.fillStyle);
+            stroke(obj.render.strokeStyle)
+            strokeWeight(obj.render.lineWidth)
+
+            beginShape();
+            let vertices = Vertices.create(obj.vertices);
+            for (let point of vertices) {
+                vertex(point.x, point.y);
+            }
+            endShape();
+        } else {
+            obj.show();
+        }
+
+        pop();
+    }
+}
+
+/*-----------------------------------------------------*/
+
+
+/**
+ * Start coding your module here
+ */
+
+//Just a nice simple function, not required
+function worldAdd(obj) {
+    World.add(world, obj)
+}
+
+//Initializes canvas with matter.js
+function init() {
+    //Regular rectangle
+    worldAdd(Bodies.rectangle(25, 10, 50, 50, {
+        render: {
+            fillStyle: 'red',
+        }
+    }))
+
+    //Regular ramp
+    worldAdd(Bodies.rectangle(500, 400, 1000, 10, {
+        angle: Math.PI * 0.05,
+        isStatic: true
+    }))
+
+    //Custom render example (if you don't want basic drawing vertices), for example a rectangle as a circle (rectangle collison, circle render)
+    let custom = Bodies.rectangle(500, 50, 100, 100)
+    custom.show = function() {
+        push();
+        fill(0, 255, 0);
+        noStroke();
+        circle(this.position.x, this.position.y, 100)
+        pop();
+    }
+    worldAdd(custom)
+}
+
+//Runs every frame if you need to check something every frame
+function onUpdate() {
+
+}
