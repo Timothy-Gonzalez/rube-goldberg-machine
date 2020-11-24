@@ -125,6 +125,23 @@ function setup() {
     Engine.run(engine);
 }
 
+function drawBody(body) {
+    if (!body.show) {
+        fill(body.render.fillStyle);
+        stroke(body.render.strokeStyle)
+        strokeWeight(body.render.lineWidth)
+
+        beginShape();
+        let vertices = Vertices.create(body.vertices);
+        for (let point of vertices) {
+            vertex(point.x, point.y);
+        }
+        endShape();
+    } else {
+        body.show();
+    }
+}
+
 function draw() {
     let change = [0, 0];
     for (let keyName in keyInputData) {
@@ -136,7 +153,7 @@ function draw() {
     }
 
     const timeAcrossScreen = 1; //Time it takes to go across one full screen
-    let cameraSpeed = baseW * (1 / timeAcrossScreen / 60) * Camera.scale;
+    let cameraSpeed = baseW * (1 / timeAcrossScreen / 60) * (1 / Camera.scale);
 
     if (change[0] !== 0 || change[1] !== 0) { //If camera is updated, change viewport
         Camera.x += change[0] * cameraSpeed;
@@ -149,27 +166,12 @@ function draw() {
     let offsetX = Camera.x * scaleFactor;
     let offsetY = Camera.y * scaleFactor;
 
-    let objects = world.bodies;
-    for (let obj of objects) { //For each
+    let bodies = Composite.allBodies(world);
+    for (let obj of bodies) { //For each
         push();
         translate(-offsetX, -offsetY);
         scale(scaleFactor);
-
-        if (!obj.show) {
-            fill(obj.render.fillStyle);
-            stroke(obj.render.strokeStyle)
-            strokeWeight(obj.render.lineWidth)
-
-            beginShape();
-            let vertices = Vertices.create(obj.vertices);
-            for (let point of vertices) {
-                vertex(point.x, point.y);
-            }
-            endShape();
-        } else {
-            obj.show();
-        }
-
+        drawBody(obj)
         pop();
     }
 }
@@ -200,6 +202,10 @@ function init() {
         angle: Math.PI * 0.05,
         isStatic: true
     }))
+
+    worldAdd(Composites.car(200, 50, 100, 5, 10))
+
+    worldAdd(Bodies.circle(750, 50, 25))
 
     //Custom render example (if you don't want basic drawing vertices), for example a rectangle as a circle (rectangle collison, circle render)
     let custom = Bodies.rectangle(500, 50, 100, 100)
