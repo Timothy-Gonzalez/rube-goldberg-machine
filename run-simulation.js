@@ -143,6 +143,7 @@ function drawBody(body) {
 }
 
 function draw() {
+    onUpdate();
     let change = [0, 0];
     for (let keyName in keyInputData) {
         let keyData = keyInputData[keyName];
