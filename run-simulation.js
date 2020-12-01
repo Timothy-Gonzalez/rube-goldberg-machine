@@ -131,12 +131,16 @@ function drawBody(body) {
         stroke(body.render.strokeStyle)
         strokeWeight(body.render.lineWidth)
 
-        beginShape();
-        let vertices = Vertices.create(body.vertices);
-        for (let point of vertices) {
-            vertex(point.x, point.y);
+        if (!body.circleRadius) {
+            beginShape();
+            let vertices = Vertices.create(body.vertices);
+            for (let point of vertices) {
+                vertex(point.x, point.y);
+            }
+            endShape();
+        } else {
+            circle(body.position.x, body.position.y, body.circleRadius * 2);
         }
-        endShape();
     } else {
         body.show();
     }
