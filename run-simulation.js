@@ -107,7 +107,7 @@ document.addEventListener("wheel", event => {
 })
 
 let runBefore = false;
-let world;
+let world, engine;
 function setup() {
     if (runBefore) {
         return
@@ -117,7 +117,7 @@ function setup() {
     let actualW = constWindowWidth - (constActualPaddingToUse * 2); //The actual width to use
     let actualH = constWindowHeight - (constActualPaddingToUse * 2); //The actual height to use
     createCanvas(actualW, actualH)
-    let engine = Engine.create();
+    engine = Engine.create();
     world = engine.world;
     console.log("Running init")
     init();
