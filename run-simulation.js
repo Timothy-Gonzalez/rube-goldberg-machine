@@ -1,7 +1,7 @@
 /**
- * Scroll to line
+ * Scroll to start coding line
  *
- * The code below is just for structure, ignore it unless you absolutely need too
+ * The code below is just for structure, ignore it unless you absolutely need too change it
  **/
 const baseW = 1000, baseH = 500; //The base size to use for dynamic scaling
 const constWindowWidth = window.innerWidth, constWindowHeight = window.innerHeight; //Define window height
@@ -52,6 +52,7 @@ let keyInputData = {
         active: false,
         offset: [1, 0],
     },
+    speed: false,
 }
 
 
@@ -82,6 +83,9 @@ function simpleKeyPress(key, pressed) {
         case 'd':
         case 'ArrowRight':
             keyInputData.right.active = pressed;
+            break;
+        case 'e':
+            keyInputData.speed = pressed;
             break;
     }
 }
@@ -122,7 +126,6 @@ function setup() {
     console.log("Running init")
     init();
     console.log("Running engine, started")
-    Engine.run(engine);
 }
 
 function drawBody(body) {
@@ -147,6 +150,13 @@ function drawBody(body) {
 }
 
 function draw() {
+    let nums = 1;
+    if (keyInputData.speed) {
+        nums = 5;
+    }
+    for (let i = 0; i < nums; i++) {
+        Matter.Engine.update(engine, 1000 / 60, 1);
+    }
     onUpdate();
     let change = [0, 0];
     for (let keyName in keyInputData) {
@@ -182,7 +192,6 @@ function draw() {
 }
 
 /*-----------------------------------------------------*/
-
 
 /**
  * Start coding your module here
