@@ -128,10 +128,22 @@ function setup() {
     console.log("Running engine, started")
 }
 
-function drawBody(body) {
-    if (!body.show) {
-        fill(body.render.fillStyle);
-        stroke(body.render.strokeStyle)
+function drawBody(body, showF, iterative) {
+    if (body.parts.length > 1 && !iterative) {
+        let bodies = body.parts
+        for (let i = 1; i < bodies.length; i++) {
+            drawBody(bodies[i], body.show, true)
+        }
+        return;
+    }
+    if (!body.show && !showF) {
+        let fillColor = color(body.render.fillStyle);
+        let strokeColor = color(body.render.strokeStyle)
+        fillColor.setAlpha(255 * body.render.opacity)
+        strokeColor.setAlpha(255 * body.render.opacity)
+
+        fill(fillColor);
+        stroke(strokeColor)
         strokeWeight(body.render.lineWidth)
 
         if (!body.circleRadius) {
@@ -145,14 +157,18 @@ function drawBody(body) {
             circle(body.position.x, body.position.y, body.circleRadius * 2);
         }
     } else {
-        body.show();
+        if (body.show) {
+            body.show();
+        } else {
+            showF()
+        }
     }
 }
 
 function draw() {
     let nums = 1;
     if (keyInputData.speed) {
-        nums = 5;
+        nums = 15;
     }
     for (let i = 0; i < nums; i++) {
         Matter.Engine.update(engine, 1000 / 60, 1);
