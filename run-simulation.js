@@ -61,6 +61,8 @@ let Camera = {
     x: 0,
     y: 0,
     scale: 1,
+    steps: [],
+    t: 0,
 };
 
 /* Detect inputs */
@@ -172,7 +174,41 @@ function draw() {
     }
     for (let i = 0; i < nums; i++) {
         Matter.Engine.update(engine, 1000 / 60, 1);
+        Camera.t += (1 / 60)
     }
+
+    if (!Camera.steps[0]) {
+        console.log("Camera not setup")
+    } else {
+        let posX = Camera.steps[0].xDif;
+        let posY = Camera.steps[0].yDif;
+        let scaleF = 1;
+        let onStep = 0;
+        let timeLeft = Camera.t;
+        for (let i = 1; i < Camera.steps.length; i++) {
+            let on = Camera.steps[i];
+            if (timeLeft > on.time) {
+                onStep = i;
+                posX += on.xDif;
+                posY += on.yDif;
+                scaleF = on.scale;
+                timeLeft -= on.time;
+            }
+        }
+
+        let nextStep = Camera.steps[onStep + 1];
+        if (nextStep) { //not out of bounds
+            let deltaT = (timeLeft) / nextStep.time
+            posX += (nextStep.xDif * deltaT)
+            posY += (nextStep.yDif * deltaT)
+            scaleF += ((nextStep.scale - scaleF) * deltaT)
+
+            Camera.x = posX;
+            Camera.y = posY;
+            Camera.scale = scaleF;
+        }
+    }
+
     onUpdate();
     let change = [0, 0];
     for (let keyName in keyInputData) {
@@ -194,17 +230,42 @@ function draw() {
     background(51);
     let scaleFactor = Camera.scale * (constWindowWidth / baseW);
 
-    let offsetX = Camera.x * scaleFactor;
-    let offsetY = Camera.y * scaleFactor;
+    console.log(Camera.x)
+    let bounds = {
+        min: {
+            x: Camera.x - ((width / 2) / scaleFactor),
+            y: Camera.y - ((height / 2) / scaleFactor),
+        },
+        max: {
+            x: Camera.x + ((width / 2) / scaleFactor),
+            y: Camera.y + ((height / 2) / scaleFactor),
+        },
+    }
 
     let bodies = Composite.allBodies(world);
     for (let obj of bodies) { //For each
         push();
-        translate(-offsetX, -offsetY);
-        scale(scaleFactor);
+        var boundsWidth = bounds.max.x - bounds.min.x,
+            boundsHeight = bounds.max.y - bounds.min.y,
+            boundsScaleX = boundsWidth / width,
+            boundsScaleY = boundsHeight / height;
+
+        scale(1 / boundsScaleX, 1 / boundsScaleY);
+        translate(-bounds.min.x, -bounds.min.y);
+
         drawBody(obj)
+
         pop();
     }
+}
+
+function addStep(xDif, yDif, scale, time) {
+    Camera.steps.push({
+        xDif: xDif,
+        yDif: yDif,
+        scale: scale,
+        time: time,
+    })
 }
 
 /*-----------------------------------------------------*/
@@ -220,6 +281,9 @@ function worldAdd(obj) {
 
 //Initializes canvas with matter.js
 function init() {
+    addStep(0, 150, 1, 0)
+    addStep(500, 0, 1, 3)
+    addStep(0, 0, 0.1, 3)
     //Regular rectangle
     worldAdd(Bodies.rectangle(25, 10, 50, 50, {
         render: {
@@ -236,6 +300,12 @@ function init() {
     worldAdd(Composites.car(200, 50, 100, 5, 10))
 
     worldAdd(Bodies.circle(750, 50, 25))
+
+
+    worldAdd(Bodies.circle(800, 800, 50, {
+        angle: Math.PI * 0.05,
+        isStatic: true
+    }))
 
     //Custom render example (if you don't want basic drawing vertices), for example a rectangle as a circle (rectangle collison, circle render)
     let custom = Bodies.rectangle(500, 50, 100, 100)
