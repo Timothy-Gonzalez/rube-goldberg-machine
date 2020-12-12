@@ -146,8 +146,9 @@ function setup() {
             onUpdate = null;
             runNext = function() {
                 removeInit(gandhiM1)
-                shiftInit(gonzalezM2Init, 30000 - ronitXFactor, 30000 - ronitYFactor)
+                shiftInit(anandaniM2Init, 0, 0)
                 runNext = function() {
+                    shiftInit(gonzalezM2Init, 30000 - ronitXFactor, 30000 - ronitYFactor)
                     console.log('end')
                 }
             }
