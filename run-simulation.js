@@ -126,7 +126,7 @@ function setup() {
     engine = Engine.create();
     world = engine.world;
     console.log("Running init")
-    init();
+    shiftInit(init, 500, 0);
     console.log("Running engine, started")
 }
 
@@ -230,7 +230,6 @@ function draw() {
     background(51);
     let scaleFactor = Camera.scale * (constWindowWidth / baseW);
 
-    console.log(Camera.x)
     let bounds = {
         min: {
             x: Camera.x - ((width / 2) / scaleFactor),
@@ -268,6 +267,29 @@ function addStep(xDif, yDif, scale, time) {
     })
 }
 
+function shiftInit(initFunction, xOffset, yOffset) {
+    let stillTracking = true;
+    let tracker = [];
+    Events.on(world, "beforeAdd", function(item) {
+        if (!stillTracking) {
+            return
+        }
+        tracker.push(item.object)
+    })
+
+    initFunction()
+    stillTracking = false;
+
+    for (let i = 0; i < tracker.length; i++) {
+        let on = tracker[i];
+        if (on.type === 'body') {
+            Body.translate(on, Vector.create(xOffset, yOffset));
+        } else if (on.type === 'composite') {
+            Composite.translate(on, Vector.create(xOffset, yOffset));
+        }
+    }
+}
+
 /*-----------------------------------------------------*/
 
 /**
@@ -288,7 +310,8 @@ function init() {
     worldAdd(Bodies.rectangle(25, 10, 50, 50, {
         render: {
             fillStyle: 'red',
-        }
+        },
+        isStatic: true
     }))
 
     //Regular ramp
