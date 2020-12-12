@@ -58,8 +58,8 @@ let keyInputData = {
 
 let Camera = {
     //Define base camera x and y
-    x: 0,
-    y: 0,
+    x: -20000,
+    y: -20000,
     scale: 1,
     steps: [],
     t: 0,
@@ -130,24 +130,27 @@ function setup() {
     world = engine.world;
     console.log("Running init")
 
-    //For some reason, translating Ronnit's project just breaks functionality. I've looked at the code for an hour now and have no clue, so it hyas to be at the origin.
-    let ronnitXFactor = 20000;
-    let ronnitYFactor = 20000;
+    //For some reason, translating Ronit's project just breaks functionality. I've looked at the code for an hour now and have no clue, so it has to be at the origin.
+    let ronitXFactor = 20000;
+    let ronitYFactor = 20000;
 
-    shiftInit(gonzalezM1Init, 0 - ronnitXFactor, 0 - ronnitYFactor);
+    let gonzalezM1 = shiftInit(gonzalezM1Init, 0 - ronitXFactor, 0 - ronitYFactor);
     onUpdate = null;
 
     runNext = function() {
-        shiftInit(gandhiM1Init, 8772 - ronnitXFactor, 9142 - ronnitYFactor);
+        let gandhiM1 = shiftInit(gandhiM1Init, 8772 - ronitXFactor, 9142 - ronitYFactor);
         onUpdate = gandhiM1Update;
         runNext = function() {
-            shiftInit(anandaniM1Init, 14050 - ronnitXFactor, 11350 - ronnitYFactor);
+            removeInit(gonzalezM1)
+            let anandaniM1 = shiftInit(anandaniM1Init, 14050 - ronitXFactor, 11350 - ronitYFactor);
             onUpdate = null;
             runNext = function() {
+                removeInit(gandhiM1)
                 anandaniM2Init()
                 onUpdate = null;
                 runNext = function() {
-                    shiftInit(gonzalezM2Init, 30000 - ronnitXFactor, 30000 - ronnitYFactor)
+                    removeInit(anandaniM1)
+                    shiftInit(gonzalezM2Init, 30000 - ronitXFactor, 30000 - ronitYFactor)
                     runNext = function() {
                         console.log('end')
                     }
@@ -155,12 +158,6 @@ function setup() {
             }
         }
     }
-    runNext()
-    runNext()
-    runNext()
-    runNext()
-    runNext()
-    runNext()
 
     console.log("Running engine, started")
 }
@@ -348,6 +345,14 @@ function shiftInit(initFunction, xOffset, yOffset) {
         let on = tracker[i];
         translateObj(on)
     }
+
+    return tracker;
+}
+
+function removeInit(obj) {
+    obj.forEach(function(item) {
+        World.remove(world, item)
+    })
 }
 
 /*-----------------------------------------------------*/
@@ -884,7 +889,7 @@ function gandhiM1Init() {
     createRect(1870,909,10,120, true, "gray",0);
     createRect(2220,1020,10,75, true, "gray",0);
     createRect(2200,809,10,320, true, "gray",0);
-    createRect(1990,623,10,300, true, "gray",0);
+    createRect(1990,623 - 50,10,400, true, "gray",0);
     createRect(4380,2523,50,50, false, "red",0);
     rect6 = Bodies.rectangle(1800,925,10,150,{ isStatic: true, render: {fillStyle:'gray'}});
     rect12 = Bodies.rectangle(2120,795,10,290,{ isStatic: true, render: {fillStyle:'gray'}});
