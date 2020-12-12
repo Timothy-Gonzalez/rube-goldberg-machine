@@ -146,15 +146,10 @@ function setup() {
             onUpdate = null;
             runNext = function() {
                 removeInit(gandhiM1)
-                anandaniM2Init()
-                onUpdate = null;
+                shiftInit(gonzalezM2Init, 30000 - ronitXFactor, 30000 - ronitYFactor)
                 runNext = function() {
-                    removeInit(anandaniM1)
-                    shiftInit(gonzalezM2Init, 30000 - ronitXFactor, 30000 - ronitYFactor)
-                    runNext = function() {
-                        console.log('end')
-                    }
-                };
+                    console.log('end')
+                }
             }
         }
     }
