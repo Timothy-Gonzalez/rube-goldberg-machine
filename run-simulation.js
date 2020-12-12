@@ -1310,7 +1310,7 @@ function anandaniM1Init() {
     worldAdd(Bodies.rectangle(3000, 900, 1050, 20, { // Floor 2
         isStatic: true
     }))
-    let fallever = Matter.Bodies.rectangle(2550, 220, 20, 390)
+    let fallever = Matter.Bodies.rectangle(2540, 220, 20, 390)
     worldAdd(fallever)
 
     worldAdd(Matter.Bodies.rectangle(3050, 840, 30, 30))
@@ -1435,6 +1435,7 @@ function anandaniM1Init() {
                 bool1=false
                 Matter.Body.setVelocity(cannonBall, {x: 40, y: -16})
                 Matter.Composite.translate(car1, {x: 300, y: 0})
+                Body.translate(cradle.bodies[0], { x: -209, y: -50 });
             }
         }
         if (bool2) {
@@ -1533,7 +1534,7 @@ function anandaniM2Init() {
     world1Objects.push(Bodies.rectangle(3290, 1160, 1200, 50, {isStatic: true})) //box top
     //world1Objects.push(Bodies.rectangle(2690, 1260, 50, 200, {isStatic: true})) //box up enter
     //world1Objects.push(Bodies.rectangle(2690, 1660, 50, 160, {isStatic: true})) //box down enter
-    world1Objects.push(Bodies.rectangle(3290, 1760, 1200, 50, {isStatic: true})) //box bottom
+    world1Objects.push(Bodies.rectangle(3290, 1760, 1250, 50, {isStatic: true})) //box bottom
 
     for(i=3160;i<3800;i+=30){
         world1Objects.push(Matter.Bodies.rectangle(i, 1620, 10, 60, {mass:4}))
@@ -1573,7 +1574,8 @@ function anandaniM2Init() {
     Body.translate(cradle.bodies[0], { x: -209, y: -80 });
     world2Objects.push(cradle)
     world2Objects.push(Bodies.rectangle(3290, 1160, 50, 600, {isStatic: true}))
-    world2Objects.push(Bodies.rectangle(3290, 600, 550, 20))
+    let superDab = Bodies.rectangle(3290, 600, 550, 20)
+    world2Objects.push(superDab)
     world2Objects.push(Bodies.rectangle(2900, 1760, 1200, 50, {isStatic: true}))
     world2Objects.push(Bodies.rectangle(1700, 2390, 2000, 50, {isStatic: true}))
     for(i=1580;i<2000;i+=40){
@@ -1600,8 +1602,8 @@ function anandaniM2Init() {
     Events.on(engine, "collisionStart", (event) => {
         if(bool1){
             if(startBall.position.x > baseRamp.position.x + 850){
-                Matter.Body.setVelocity(startBall, {x: 10, y: -10})
-                startBall.restitution = 1.4
+                Matter.Body.setVelocity(startBall, {x: 17, y: -5})
+                startBall.restitution = 0
                 bool1 = false
             }
         }
@@ -1618,6 +1620,7 @@ function anandaniM2Init() {
         if(bool3){
             if(superSquare.position.x > baseRamp.position.x + 4065){    //4115
                 Matter.Body.setVelocity(superSquare, {x: 20, y: -20})
+                Matter.Body.setVelocity(transCircle, {x: 5, y: 0})
                 bool3 = false
             }
         }
@@ -1646,8 +1649,10 @@ function anandaniM2Init() {
             }
         }
         if((bool6)){
-            if(bBlock.position.y > baseRamp.position.x + 1750){           //1800
+            if(bBlock.position.y > baseRamp.position.x + 1753){           //1800
                 Matter.Body.setVelocity(bBlock, {x: 0, y: -73})
+                Matter.Body.setVelocity(superDab, {x: -20, y: 0})
+                Body.translate(cradle.bodies[0], { x: -209, y: -90 });
                 bool6=false
             }
         }
@@ -1658,7 +1663,7 @@ function anandaniM2Init() {
             }
         }
         if(bool8){
-            if(finalCircle.position.x > (baseRamp.position.x + 720) && (finalCircle.position.y < (baseRamp.position.x + 1800) && finalCircle.position.y > (baseRamp.position.x + 1500))){   //770    1850   1550
+            if(finalCircle.position.x > (baseRamp.position.x + 710) && (finalCircle.position.y < (baseRamp.position.x + 1820) && finalCircle.position.y > (baseRamp.position.x + 1500))){   //770    1850   1550
                 Matter.Body.setVelocity(finalCircle, {x: -30, y: -20})
                 bool8=false
             }
