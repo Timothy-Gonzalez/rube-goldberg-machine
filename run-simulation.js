@@ -1521,16 +1521,17 @@ function anandaniM2Init() {
 
     world1Objects.push(Bodies.rectangle(1060, 600, 200, 10, {angle: 134.6, isStatic: true})) //ramp
     world1Objects.push(Bodies.rectangle(1490, 560, 200, 10, {isStatic: true})) //pad1
-    world1Objects.push(Bodies.rectangle(2290, 660, 200, 10, {isStatic: true})) //bottom s
-    world1Objects.push(Bodies.rectangle(2390, 560, 10, 200, {isStatic: true})) //right s
-    world1Objects.push(Bodies.rectangle(2290, 250, 200, 10, {isStatic: true})) //top s
-    world1Objects.push(Bodies.rectangle(2190, 360, 10, 200, {isStatic: true})) //left s
-    world1Objects.push(Bodies.rectangle(2690, 360, 10, 200, {isStatic: true})) //top col
-    world1Objects.push(Bodies.rectangle(2690, 660, 10, 200, {isStatic: true})) //bottom col
-    world1Objects.push(Bodies.rectangle(2090, 1200, 30, 200, {isStatic: true})) //lower col
+    world1Objects.push(Bodies.rectangle(2290, 660, 200, 20, {isStatic: true})) //bottom s
+    world1Objects.push(Bodies.rectangle(2390, 530, 20, 200, {isStatic: true})) //right s
+    world1Objects.push(Bodies.rectangle(2340, 250, 500, 20, {isStatic: true})) //top s
+    world1Objects.push(Bodies.rectangle(2190, 360, 20, 200, {isStatic: true})) //left s
+    world1Objects.push(Bodies.rectangle(2690, 360, 20, 200, {isStatic: true})) //top col
+    world1Objects.push(Bodies.rectangle(2690, 660, 20, 200, {isStatic: true})) //bottom col
+    world1Objects.push(Bodies.rectangle(2090, 1500, 600, 50, {angle: 145, isStatic: true}))
+    //world1Objects.push(Bodies.rectangle(2090, 1400, 30, 700, {angle: 145, isStatic: true})) //lower col
 
     world1Objects.push(Bodies.rectangle(3290, 1160, 1200, 50, {isStatic: true})) //box top
-    world1Objects.push(Bodies.rectangle(2690, 1260, 50, 200, {isStatic: true})) //box up enter
+    //world1Objects.push(Bodies.rectangle(2690, 1260, 50, 200, {isStatic: true})) //box up enter
     //world1Objects.push(Bodies.rectangle(2690, 1660, 50, 160, {isStatic: true})) //box down enter
     world1Objects.push(Bodies.rectangle(3290, 1760, 1200, 50, {isStatic: true})) //box bottom
 
