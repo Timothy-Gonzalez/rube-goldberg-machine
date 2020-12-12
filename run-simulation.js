@@ -58,8 +58,8 @@ let keyInputData = {
 
 let Camera = {
     //Define base camera x and y
-    x: -20000,
-    y: -20000,
+    x: 0,
+    y: 0,
     scale: 1,
     steps: [],
     t: 0,
@@ -158,6 +158,13 @@ function setup() {
             }
         }
     }
+
+    runNext();
+    runNext();
+    runNext();
+    runNext();
+    runNext();
+    runNext();
 
     console.log("Running engine, started")
 }
