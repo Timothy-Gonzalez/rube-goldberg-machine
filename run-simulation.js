@@ -1530,7 +1530,7 @@ function anandaniM2Init() {
 
     world1Objects.push(Bodies.rectangle(3290, 1160, 1200, 50, {isStatic: true})) //box top
     world1Objects.push(Bodies.rectangle(2690, 1260, 50, 200, {isStatic: true})) //box up enter
-    world1Objects.push(Bodies.rectangle(2690, 1660, 50, 160, {isStatic: true})) //box down enter
+    //world1Objects.push(Bodies.rectangle(2690, 1660, 50, 160, {isStatic: true})) //box down enter
     world1Objects.push(Bodies.rectangle(3290, 1760, 1200, 50, {isStatic: true})) //box bottom
 
     for(i=3160;i<3800;i+=30){
