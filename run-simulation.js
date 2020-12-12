@@ -57,8 +57,8 @@ let keyInputData = {
 
 
 //For some reason, translating Ronit's project just breaks functionality. I've looked at the code for an hour now and have no clue, so it has to be at the origin.
-let ronitXFactor = 20000;
-let ronitYFactor = 12000;
+let ronitXFactor = 19300;
+let ronitYFactor = 12350;
 
 let Camera = {
     //Define base camera x and y
@@ -709,11 +709,15 @@ function gonzalezM1Init() {
         },
     }))
 
-    let offsets = [0, 1350, 2250, 2900];
+    let offsets = [0, 1350, 2250, 3000];
 
     for (let i = 0; i < offsets.length; i++) {
         let offset = offsets[i];
-        createSpring(2270 + offset, 4450, 300, 25, (1.05 - (i / 4 / 2)))
+        let val = (1.02 - (i / 4 / 2))
+        if (i === 3) {
+            val *= 0.95;
+        }
+        createSpring(2270 + offset, 4450, 300, 25, val)
     }
 
 
@@ -1394,22 +1398,23 @@ function anandaniM1Init() {
         isStatic: true
     }))
 
-    let gravBall = Matter.Bodies.circle(4400, 1490, 25, { restitution: 0.8, isStatic: false });
+    let gravBall = Matter.Bodies.circle(4400, 1490, 25, { isStatic: false });
     worldAdd(gravBall)
 
-    worldAdd(Bodies.rectangle(5100, 800, 550, 20, { // Floor 2
-        isStatic: true
+    worldAdd(Bodies.rectangle(5040, 950, 550, 20, { // Floor 2
+        isStatic: true,
+        angle: (35) * (Math.PI / 180),
     }))
 
-    //liquid?
-    let stack2 = Matter.Composites.stack(3200, 200, 22, 12, 0, 0, function(x, y) {      //Stack of small objects stacked 22x12
-        return Matter.Bodies.circle(x, y, 5, { mass: 80, isStatic: false });
-    });
-    //worldAdd(stack2)
-
-    let ballStack = Matter.Composites.stack(3200, 200, 2, 2, 0, 0, function(x, y) {      //Stack of circles stacked 2x2
-        return Matter.Bodies.circle(x, y, 5, { mass: 80, isStatic: false });
-    });
+    // //liquid?
+    // let stack2 = Matter.Composites.stack(3200, 200, 22, 12, 0, 0, function(x, y) {      //Stack of small objects stacked 22x12
+    //     return Matter.Bodies.circle(x, y, 5, { mass: 80, isStatic: false });
+    // });
+    // //worldAdd(stack2)
+    //
+    // let ballStack = Matter.Composites.stack(3200, 200, 2, 2, 0, 0, function(x, y) {      //Stack of circles stacked 2x2
+    //     return Matter.Bodies.circle(x, y, 5, { mass: 80, isStatic: false });
+    // });
 
 
 
@@ -1508,6 +1513,9 @@ function anandaniM2Init() {
     worldAdd(Bodies.rectangle(600, 650, 800, 10, {isStatic: true}))
     worldAdd(Bodies.rectangle(7000, 650, 1800, 100, {isStatic: true}))
     let startBall = Bodies.circle(20, 50, 10, {density: 0.01, friction: 0.0001, frictionAir: 0.00001})
+    worldAdd(Bodies.rectangle(20, 100, 15, 15, {
+        isStatic: true
+    }))
     worldAdd(startBall)
 
 
