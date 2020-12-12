@@ -56,10 +56,14 @@ let keyInputData = {
 }
 
 
+//For some reason, translating Ronit's project just breaks functionality. I've looked at the code for an hour now and have no clue, so it has to be at the origin.
+let ronitXFactor = 20000;
+let ronitYFactor = 12000;
+
 let Camera = {
     //Define base camera x and y
-    x: 0,
-    y: 0,
+    x: -ronitXFactor,
+    y: -ronitYFactor,
     scale: 1,
     steps: [],
     t: 0,
@@ -130,10 +134,6 @@ function setup() {
     world = engine.world;
     console.log("Running init")
 
-    //For some reason, translating Ronit's project just breaks functionality. I've looked at the code for an hour now and have no clue, so it has to be at the origin.
-    let ronitXFactor = 20000;
-    let ronitYFactor = 20000;
-
     let gonzalezM1 = shiftInit(gonzalezM1Init, 0 - ronitXFactor, 0 - ronitYFactor);
     onUpdate = null;
 
@@ -158,13 +158,6 @@ function setup() {
             }
         }
     }
-
-    runNext();
-    runNext();
-    runNext();
-    runNext();
-    runNext();
-    runNext();
 
     console.log("Running engine, started")
 }
@@ -720,7 +713,7 @@ function gonzalezM1Init() {
 
     for (let i = 0; i < offsets.length; i++) {
         let offset = offsets[i];
-        createSpring(2270 + offset, 4450, 300, 25, (1 - (i / 4 / 2)))
+        createSpring(2270 + offset, 4450, 300, 25, (1.05 - (i / 4 / 2)))
     }
 
 
@@ -1325,8 +1318,8 @@ function anandaniM1Init() {
         isStatic: true
     }))
 
-    let lever = Matter.Bodies.rectangle(3500, 210, 710, 19, {
-        density: 0.00015,
+    let lever = Matter.Bodies.rectangle(3500, 210, 910, 19 * 2, {
+        density: 0.00015 / 2,
     })
     worldAdd(lever)
 
