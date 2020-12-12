@@ -314,7 +314,6 @@ function shiftInit(initFunction, xOffset, yOffset) {
     let tracker = [];
 
     Events.on(world, "beforeAdd", function(item) {
-        console.log(item)
         if (!stillTracking) {
             return
         }
