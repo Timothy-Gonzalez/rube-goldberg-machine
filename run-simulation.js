@@ -1522,11 +1522,11 @@ function anandaniM2Init() {
     world1Objects.push(Bodies.rectangle(1490, 560, 200, 10, {isStatic: true})) //pad1
     world1Objects.push(Bodies.rectangle(2290, 660, 200, 10, {isStatic: true})) //bottom s
     world1Objects.push(Bodies.rectangle(2390, 560, 10, 200, {isStatic: true})) //right s
-    world1Objects.push(Bodies.rectangle(2290, 260, 200, 10, {isStatic: true})) //top s
+    world1Objects.push(Bodies.rectangle(2290, 250, 200, 10, {isStatic: true})) //top s
     world1Objects.push(Bodies.rectangle(2190, 360, 10, 200, {isStatic: true})) //left s
     world1Objects.push(Bodies.rectangle(2690, 360, 10, 200, {isStatic: true})) //top col
     world1Objects.push(Bodies.rectangle(2690, 660, 10, 200, {isStatic: true})) //bottom col
-    world1Objects.push(Bodies.rectangle(2090, 960, 10, 200, {isStatic: true})) //lower col
+    world1Objects.push(Bodies.rectangle(2090, 1200, 30, 200, {isStatic: true})) //lower col
 
     world1Objects.push(Bodies.rectangle(3290, 1160, 1200, 50, {isStatic: true})) //box top
     world1Objects.push(Bodies.rectangle(2690, 1260, 50, 200, {isStatic: true})) //box up enter
@@ -1597,7 +1597,7 @@ function anandaniM2Init() {
 
     Events.on(engine, "collisionStart", (event) => {
         if(bool1){
-            if(startBall.position.x > baseRamp.position.x + 750){
+            if(startBall.position.x > baseRamp.position.x + 850){
                 Matter.Body.setVelocity(startBall, {x: 10, y: -10})
                 startBall.restitution = 1.4
                 bool1 = false
@@ -1645,7 +1645,7 @@ function anandaniM2Init() {
         }
         if((bool6)){
             if(bBlock.position.y > baseRamp.position.x + 1750){           //1800
-                Matter.Body.setVelocity(bBlock, {x: 0, y: -70})
+                Matter.Body.setVelocity(bBlock, {x: 0, y: -73})
                 bool6=false
             }
         }
