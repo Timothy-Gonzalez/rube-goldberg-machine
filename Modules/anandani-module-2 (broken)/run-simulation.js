@@ -234,7 +234,7 @@ function init() {
     let bool10 = true
     let bool11 = true
     let bool12 = true
-    
+
     //Regular rectangle
     // worldAdd(Bodies.rectangle(25, 10, 50, 50, {
     //     render: {
@@ -242,9 +242,10 @@ function init() {
     //     }
     // }))
     //Final Objects
-    
+
     //Regular ramp
     let baseRamp = Bodies.rectangle(50, 400, 600, 10, {angle: 145.5, isStatic: true})
+    let storedOffset = Vector.clone(baseRamp.position) //Timothy added this because stuff needs to be translated
     worldAdd(baseRamp)
     worldAdd(Bodies.rectangle(600, 650, 800, 10, {isStatic: true}))
     worldAdd(Bodies.rectangle(7000, 650, 1800, 100, {isStatic: true}))
@@ -266,7 +267,7 @@ function init() {
     world1Objects.push(Bodies.rectangle(2690, 1260, 50, 200, {isStatic: true})) //box up enter
     world1Objects.push(Bodies.rectangle(2690, 1660, 50, 200, {isStatic: true})) //box down enter
     world1Objects.push(Bodies.rectangle(3290, 1760, 1200, 50, {isStatic: true})) //box bottom
-    
+
     for(i=3160;i<3800;i+=30){
         world1Objects.push(Matter.Bodies.rectangle(i, 1620, 10, 60, {mass:4}))
     }
@@ -320,10 +321,10 @@ function init() {
     world2Objects.push(Bodies.rectangle(800, 1060, 50, 250, {isStatic: true}))
     world2Objects.push(Bodies.rectangle(0, 760, 50, 250, {isStatic: true}))
     world2Objects.push(Bodies.rectangle(1200, 870, 50, 250, {angle: 135.7, isStatic: true}))
-    
+
 
     world1Objects.forEach(element => worldAdd(element))
-    
+
     //worldAdd(Composites.car(200, 50, 100, 5, 10))
     var newBall = Bodies.circle(finalCircle.position.x, finalCircle.position.y, 10, {friction: 0.9, frictionAir: 0.0001})
     var newBall2 = Bodies.circle(finalCircle.position.x, finalCircle.position.y, 10, {friction: 0.9, frictionAir: 0.0001})
@@ -357,7 +358,16 @@ function init() {
             if (transCircle.position.x > baseRamp.position.x + 7815){       //7865
                 Matter.Body.setVelocity(transCircle, {x: -20, y: 0})
                 world1Objects.forEach(element => Matter.World.remove(world, element))
-                world2Objects.forEach(element => worldAdd(element))
+                world2Objects.forEach(element => {
+                    //Timothy added this because stuff needs to be translated
+                    let offset = (Vector.sub(Vector.clone(baseRamp.position), storedOffset))
+                    if (element.type === 'body') {
+                        Body.translate(element, offset)
+                    } else if (element.type === 'composite') {
+                        Composite.translate(element, offset)
+                    }
+                    worldAdd(element)
+                })
                 bool4=false
                 bool5=true
             }
@@ -424,29 +434,6 @@ function init() {
             }
         }
     })
-    // let ball = Matter.Bodies.circle(0, 10, 30, {
-    //     density: 0.02,
-    //     friction: 0.0001,
-    //     frictionAir: 0.00001,
-    //     //restitution: 1.03,      //1.03
-    //     render: {
-    //         fillStyle: '#F35e66',
-    //         strokeStyle: 'black',
-    //         lineWidth: 1
-    //     }
-    // });
-    //worldAdd(ball)
-
-    //Custom render example (if you don't want basic drawing vertices), for example a rectangle as a circle (rectangle collison, circle render)
-    // let custom = Bodies.rectangle(500, 50, 100, 100)
-    // custom.show = function() {
-    //     push();
-    //     fill(0, 255, 0);
-    //     noStroke();
-    //     circle(this.position.x, this.position.y, 100)
-    //     pop();
-    // }
-    // worldAdd(custom)
 }
 
 //Runs every frame if you need to check something every frame
