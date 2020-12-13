@@ -1611,29 +1611,35 @@ function anandaniM2Init(data) {
 
     //Regular ramp
     let baseRamp = Bodies.rectangle(50, 400, 600, 10, {angle: 145.5, isStatic: true})
+    let storedOffset = Vector.clone(baseRamp.position) //Timothy added this because stuff needs to be translated
     worldAdd(baseRamp)
     worldAdd(Bodies.rectangle(600, 650, 800, 10, {isStatic: true}))
     worldAdd(Bodies.rectangle(7000, 650, 1800, 100, {isStatic: true}))
-
     let startBall = Bodies.circle(20, 50, 10, {density: 0.01, friction: 0.0001, frictionAir: 0.00001})
-    worldAdd(Bodies.rectangle(20, 70, 15, 15, {isStatic: true}))
+    worldAdd(Bodies.rectangle(20, 100, 15, 15, {
+        isStatic: true
+    }))
     worldAdd(startBall)
 
+    setTimeout(function() {
+        World.remove(world, m3to4ball)
+    }, 10000)
 
     world1Objects.push(Bodies.rectangle(1060, 600, 200, 10, {angle: 134.6, isStatic: true})) //ramp
     world1Objects.push(Bodies.rectangle(1490, 560, 200, 10, {isStatic: true})) //pad1
-    world1Objects.push(Bodies.rectangle(2290, 660, 200, 10, {isStatic: true})) //bottom s
-    world1Objects.push(Bodies.rectangle(2390, 560, 10, 120, {isStatic: true})) //right s
-    world1Objects.push(Bodies.rectangle(2290, 260, 200, 10, {isStatic: true})) //top s
-    world1Objects.push(Bodies.rectangle(2190, 360, 10, 200, {isStatic: true})) //left s
-    world1Objects.push(Bodies.rectangle(2690, 360, 10, 200, {isStatic: true})) //top col
-    world1Objects.push(Bodies.rectangle(2690, 660, 10, 200, {isStatic: true})) //bottom col
-    world1Objects.push(Bodies.rectangle(2090, 960, 10, 200, {isStatic: true})) //lower col
+    world1Objects.push(Bodies.rectangle(2290, 660, 200, 20, {isStatic: true})) //bottom s
+    world1Objects.push(Bodies.rectangle(2390, 530, 20, 200, {isStatic: true})) //right s
+    world1Objects.push(Bodies.rectangle(2340, 250, 500, 20, {isStatic: true})) //top s
+    world1Objects.push(Bodies.rectangle(2190, 360, 20, 200, {isStatic: true})) //left s
+    world1Objects.push(Bodies.rectangle(2690, 360, 20, 200, {isStatic: true})) //top col
+    world1Objects.push(Bodies.rectangle(2690, 660, 20, 200, {isStatic: true})) //bottom col
+    world1Objects.push(Bodies.rectangle(2090, 1500, 600, 50, {angle: 145, isStatic: true}))
+    //world1Objects.push(Bodies.rectangle(2090, 1400, 30, 700, {angle: 145, isStatic: true})) //lower col
 
     world1Objects.push(Bodies.rectangle(3290, 1160, 1200, 50, {isStatic: true})) //box top
-    world1Objects.push(Bodies.rectangle(2690, 1260, 50, 200, {isStatic: true})) //box up enter
-    world1Objects.push(Bodies.rectangle(2690, 1660, 50, 200, {isStatic: true})) //box down enter
-    world1Objects.push(Bodies.rectangle(3290, 1760, 1200, 50, {isStatic: true})) //box bottom
+    //world1Objects.push(Bodies.rectangle(2690, 1260, 50, 200, {isStatic: true})) //box up enter
+    //world1Objects.push(Bodies.rectangle(2690, 1660, 50, 160, {isStatic: true})) //box down enter
+    world1Objects.push(Bodies.rectangle(3290, 1760, 1250, 50, {isStatic: true})) //box bottom
 
     for(i=3160;i<3800;i+=30){
         world1Objects.push(Matter.Bodies.rectangle(i, 1620, 10, 60, {mass:4}))
@@ -1644,7 +1650,10 @@ function anandaniM2Init(data) {
     let superSquare = Bodies.rectangle(4100, 2450, 30, 30)
     world1Objects.push(superSquare)
     world1Objects.push(Bodies.rectangle(5200, 2520, 20, 420, {isStatic: true}))
-    world1Objects.push(Bodies.rectangle(5225, 2200, 420, 20))
+    let brokenObject = Bodies.rectangle(5226, 2200, 420, 20)
+    Body.setStatic(brokenObject, true)
+    world1Objects.push(brokenObject)
+
     let transCircle = Bodies.circle(5120, 2170, 10, {density: 0.01, friction: 0.0001, frictionAir: 0.00001})
     worldAdd(transCircle)
     world1Objects.push(Bodies.rectangle(5620, 2800, 600, 50, {angle: 145, isStatic: true}))
@@ -1673,7 +1682,8 @@ function anandaniM2Init(data) {
     Body.translate(cradle.bodies[0], { x: -209, y: -80 });
     world2Objects.push(cradle)
     world2Objects.push(Bodies.rectangle(3290, 1160, 50, 600, {isStatic: true}))
-    world2Objects.push(Bodies.rectangle(3290, 600, 550, 20))
+    let superDab = Bodies.rectangle(3290, 600, 550, 20)
+    world2Objects.push(superDab)
     world2Objects.push(Bodies.rectangle(2900, 1760, 1200, 50, {isStatic: true}))
     world2Objects.push(Bodies.rectangle(1700, 2390, 2000, 50, {isStatic: true}))
     for(i=1580;i<2000;i+=40){
@@ -1699,9 +1709,9 @@ function anandaniM2Init(data) {
 
     Events.on(engine, "collisionStart", (event) => {
         if(bool1){
-            if(startBall.position.x > baseRamp.position.x + 750){
-                Matter.Body.setVelocity(startBall, {x: 10, y: -10})
-                startBall.restitution = 1.4
+            if(startBall.position.x > baseRamp.position.x + 850){
+                Matter.Body.setVelocity(startBall, {x: 17, y: -5})
+                startBall.restitution = 0
                 bool1 = false
             }
         }
@@ -1718,6 +1728,8 @@ function anandaniM2Init(data) {
         if(bool3){
             if(superSquare.position.x > baseRamp.position.x + 4065){    //4115
                 Matter.Body.setVelocity(superSquare, {x: 20, y: -20})
+                Matter.Body.setVelocity(transCircle, {x: 5, y: 0})
+                Body.setStatic(brokenObject, false)
                 bool3 = false
             }
         }
@@ -1725,7 +1737,16 @@ function anandaniM2Init(data) {
             if (transCircle.position.x > baseRamp.position.x + 7815){       //7865
                 Matter.Body.setVelocity(transCircle, {x: -20, y: 0})
                 world1Objects.forEach(element => Matter.World.remove(world, element))
-                world2Objects.forEach(element => worldAdd(element))
+                world2Objects.forEach(element => {
+                    //Timothy added this because stuff needs to be translated
+                    let offset = (Vector.sub(Vector.clone(baseRamp.position), storedOffset))
+                    if (element.type === 'body') {
+                        Body.translate(element, offset)
+                    } else if (element.type === 'composite') {
+                        Composite.translate(element, offset)
+                    }
+                    worldAdd(element)
+                })
                 bool4=false
                 bool5=true
             }
@@ -1737,8 +1758,10 @@ function anandaniM2Init(data) {
             }
         }
         if((bool6)){
-            if(bBlock.position.y > baseRamp.position.x + 1750){           //1800
-                Matter.Body.setVelocity(bBlock, {x: 0, y: -70})
+            if(bBlock.position.y > baseRamp.position.x + 1753){           //1800
+                Matter.Body.setVelocity(bBlock, {x: 0, y: -73})
+                Matter.Body.setVelocity(superDab, {x: -20, y: 0})
+                Body.translate(cradle.bodies[0], { x: -209, y: -90 });
                 bool6=false
             }
         }
@@ -1749,7 +1772,7 @@ function anandaniM2Init(data) {
             }
         }
         if(bool8){
-            if(finalCircle.position.x > (baseRamp.position.x + 720) && (finalCircle.position.y < (baseRamp.position.x + 1800) && finalCircle.position.y > (baseRamp.position.x + 1500))){   //770    1850   1550
+            if(finalCircle.position.x > (baseRamp.position.x + 710) && (finalCircle.position.y < (baseRamp.position.x + 1820) && finalCircle.position.y > (baseRamp.position.x + 1500))){   //770    1850   1550
                 Matter.Body.setVelocity(finalCircle, {x: -30, y: -20})
                 bool8=false
             }
@@ -1773,10 +1796,11 @@ function anandaniM2Init(data) {
                 worldAdd(newBall)
                 worldAdd(newBall2)
                 worldAdd(Bodies.circle((baseRamp.position.x + 950) , (baseRamp.position.x + 600) , 100, {density: 0.01, friction: 0.0001, frictionAir: 0.00001, isStatic: true}))    //1000      650
-                worldAdd(Bodies.circle((baseRamp.position.x + 6250) , (baseRamp.position.x + 570) , 100, {density: 0.01, friction: 0.0001, frictionAir: 0.00001, isStatic: true}))    //6300      620
+                //worldAdd(Bodies.circle((baseRamp.position.x + 6250) , (baseRamp.position.x + 570) , 100, {density: 0.01, friction: 0.0001, frictionAir: 0.00001, isStatic: true}))    //6300      620
                 Matter.Body.setVelocity(newBall, {x: 45, y: -18})
                 world2Objects.forEach(element => Matter.World.remove(world, element))
                 bool11=false
+                runNext();
             }
         }
         if(bool12){
@@ -1788,6 +1812,7 @@ function anandaniM2Init(data) {
                 }, 1000)
                 // newBall2.position.x += 5500
                 // newBall2.position.y -= 250
+
                 bool12=false
             }
         }
@@ -2239,7 +2264,12 @@ function gonzalezM2Init(data) {
     }
 
 
-    createBall(300, 50, 30)
+    let ball = createBall(300, 50, 30)
+
+    setTimeout(function() {
+        Body.setVelocity(ball, Vector.create(3, 0))
+    }, 8000)
+
     worldAdd(Bodies.rectangle(300, 100, 5, 5, {
         isStatic: true,
         render: {
