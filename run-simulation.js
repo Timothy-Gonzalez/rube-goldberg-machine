@@ -1066,7 +1066,7 @@ function gandhiM1Init(data) {
         length: 0
     }));
 
-    catapult3 = Bodies.rectangle(2600, 520, 10, 435, { frictionAir: 0.1,density:0.000000005,collisionFilter: { group: group }, render:{fillStyle:'dodgerblue'}, angle: 30*(Math.PI/180)});
+    catapult3 = Bodies.rectangle(2600, 520, 10, 485, { frictionAir: 0.1,density:0.000000005,collisionFilter: { group: group }, render:{fillStyle:'dodgerblue'}, angle: 30*(Math.PI/180)});
     gandhiobjects.push(catapult3, Constraint.create({
         bodyA: catapult3,
         pointB: Vector.clone(catapult3.position),
@@ -1092,7 +1092,7 @@ function gandhiM1Init(data) {
     //---------- Plinko Frame End
 
     //---------- Plinko Non-Static Balls
-    gandhiobjects.push(Bodies.rectangle(2500,1350,10,1250,{ isStatic: true, render: {fillStyle:'gray'}}));//plinko wall 1
+    gandhiobjects.push(Bodies.rectangle(2500,1370,10,1225,{ isStatic: true, render: {fillStyle:'gray'}}));//plinko wall 1
     gandhiobjects.push(Bodies.rectangle(3050,1350,10,1250,{ isStatic: true, render: {fillStyle:'gray'}}));//plinko wall 2
     gandhiobjects.push(rh3 = Bodies.rectangle(2525,750,50,10,{ isStatic: true, render: {fillStyle:'gray'}}));// first spike
     gandhiobjects.push(rhc1 = Bodies.circle(2530, 700, 22.5, {friction: 0.01, frictionAir: 0.025, restitution:0.5, render: {fillStyle: "darkviolet"}}));
@@ -1641,10 +1641,10 @@ function anandaniM2Init(data) {
     //world1Objects.push(Bodies.rectangle(2690, 1660, 50, 160, {isStatic: true})) //box down enter
     world1Objects.push(Bodies.rectangle(3290, 1760, 1250, 50, {isStatic: true})) //box bottom
 
-    for(i=3160;i<3800;i+=30){
-        world1Objects.push(Matter.Bodies.rectangle(i, 1620, 10, 60, {mass:4}))
+    for(i=3160;i<3820;i+=20){
+        world1Objects.push(Matter.Bodies.rectangle(i, 1620, 10, 60))
     }
-    world1Objects.push(Composites.car(3850, 1630, 100, 5, 10))
+    world1Objects.push(Composites.car(3884.771, 1630, 100, 5, 10))
     world1Objects.push(Bodies.rectangle(3870, 2400, 600, 50, {angle: 145, isStatic: true}))
     world1Objects.push(Bodies.rectangle(4400, 2520, 600, 50, {isStatic: true}))
     let superSquare = Bodies.rectangle(4100, 2450, 30, 30)
@@ -1654,7 +1654,7 @@ function anandaniM2Init(data) {
     Body.setStatic(brokenObject, true)
     world1Objects.push(brokenObject)
 
-    let transCircle = Bodies.circle(5120, 2170, 10, {density: 0.01, friction: 0.0001, frictionAir: 0.00001})
+    let transCircle = Bodies.circle(5120, 2170, 10, {density: 0.02, friction: 0.0001, frictionAir: 0.00001})
     worldAdd(transCircle)
     world1Objects.push(Bodies.rectangle(5620, 2800, 600, 50, {angle: 145, isStatic: true}))
     let bigWall = Bodies.rectangle(7906, 3000, 50, 600, {isStatic: true})
@@ -1673,10 +1673,11 @@ function anandaniM2Init(data) {
     //world2Objects.push(Bodies.rectangle(5090, 1460, 50, 600, {isStatic: true})) //box up enter
     world2Objects.push(Bodies.rectangle(6190, 1460, 50, 600, {isStatic: true})) //box down enter
     world2Objects.push(Bodies.rectangle(5390, 1760, 1200, 50, {isStatic: true})) //box bottom
-    for(i=4880;i<5850;i+=20){
-        world2Objects.push(Matter.Bodies.rectangle(i, 1620, 10, 60, {mass:4}))
+    world2Objects.push(Bodies.rectangle(5900, 1750, 100, 50, {isStatic: true}))
+    for(i=4850;i<5850;i+=15){
+        world2Objects.push(Matter.Bodies.rectangle(i, 1620, 10, 60))
     }
-    let bBlock = Bodies.rectangle(4850, 1660, 60, 60, {mass:20})
+    let bBlock = Bodies.rectangle(4800, 1660, 60, 60)
     world2Objects.push(bBlock)
     let cradle = Composites.newtonsCradle(3780, 800, 10, 50, 200)
     Body.translate(cradle.bodies[0], { x: -209, y: -80 });
@@ -1687,7 +1688,7 @@ function anandaniM2Init(data) {
     world2Objects.push(Bodies.rectangle(2900, 1760, 1200, 50, {isStatic: true}))
     world2Objects.push(Bodies.rectangle(1700, 2390, 2000, 50, {isStatic: true}))
     for(i=1580;i<2000;i+=40){
-        world2Objects.push(Matter.Bodies.rectangle(i, 1620, 20, 550, {mass:4}))
+        world2Objects.push(Matter.Bodies.rectangle(i, 1620, 20, 550))
     }
     let finalCircle = Bodies.circle(850, 1870, 10, {density: 0.01, friction: 0.0001, frictionAir: 0.00001, restitution: 0.9})
     world2Objects.push(finalCircle)
@@ -1722,6 +1723,7 @@ function anandaniM2Init(data) {
                 world1Objects.push(dominoBox)
                 worldAdd(dominoBox)
                 Body.setAngularVelocity( dominoBox, Math.PI/18);
+                Matter.Body.setVelocity(dominoBox, {x: 5, y: 0})
                 bool2 = false
             }
         }
@@ -2267,7 +2269,7 @@ function gonzalezM2Init(data) {
     let ball = createBall(300, 50, 30)
 
     setTimeout(function() {
-        Body.setVelocity(ball, Vector.create(3, 0))
+        Body.setVelocity(ball, Vector.create(2, 0))
     }, 8000)
 
     worldAdd(Bodies.rectangle(300, 100, 5, 5, {
