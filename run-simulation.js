@@ -55,15 +55,10 @@ let keyInputData = {
     speed: false,
 }
 
-
-//For some reason, translating Ronit's project just breaks functionality. I've looked at the code for an hour now and have no clue, so it has to be at the origin.
-let ronitXFactor = 19300;
-let ronitYFactor = 12350;
-
 let Camera = {
     //Define base camera x and y
-    x: -ronitXFactor,
-    y: -ronitYFactor,
+    x: 0,
+    y: 0,
     scale: 1,
     steps: [],
     t: 0,
@@ -117,7 +112,7 @@ document.addEventListener("wheel", event => {
 })
 
 let runBefore = false;
-let world, engine;
+let modules = [];
 
 let runNext, onUpdate;
 
@@ -130,52 +125,57 @@ function setup() {
     let actualW = constWindowWidth - (constActualPaddingToUse * 2); //The actual width to use
     let actualH = constWindowHeight - (constActualPaddingToUse * 2); //The actual height to use
     createCanvas(actualW, actualH)
-    engine = Engine.create();
-    world = engine.world;
-    console.log("Running init")
+    console.log("Running inits")
 
-    let gonzalezM1 = shiftInit(gonzalezM1Init, 0 - ronitXFactor, 0 - ronitYFactor);
+    let gonzalezM1 = shiftInit(gonzalezM1Init, 0, 0);
     onUpdate = null;
 
     runNext = function() {
-        let gandhiM1 = shiftInit(gandhiM1Init, 8772 - ronitXFactor, 9142 - ronitYFactor);
+        let gandhiM1 = shiftInit(gandhiM1Init, 8772, 9142);
         onUpdate = gandhiM1Update;
+        World.remove(gonzalezM1.world, m1to2car)
+        Composite.translate(m1to2car, Vector.create(-8772, -9142))
+        World.add(gandhiM1.world, m1to2car)
+
         runNext = function() {
             removeInit(gonzalezM1)
-            let anandaniM1 = shiftInit(anandaniM1Init, 14050 - ronitXFactor, 11350 - ronitYFactor);
+            let anandaniM1 = shiftInit(anandaniM1Init, 14050, 11350);
             onUpdate = null;
             runNext = function() {
                 removeInit(gandhiM1)
-                shiftInit(anandaniM2Init, 0, 0)
+                let anandaniM2 = shiftInit(anandaniM2Init, 19300, 12350)
+                World.remove(anandaniM1.world, m3to4ball)
+                Body.translate(m3to4ball, Vector.create((anandaniM1.xOffset - anandaniM2.xOffset), (anandaniM1.yOffset - anandaniM2.yOffset)))
+                World.add(anandaniM2.world, m3to4ball)
                 runNext = function() {
                     removeInit(anandaniM1)
-                    shiftInit(gonzalezM2Init, 27100 - ronitXFactor, 12875 - ronitYFactor)
+                    shiftInit(gonzalezM2Init, 27100, 12875)
                     console.log('end')
                 }
             }
         }
     }
 
-    addStep(Camera.x + 500, Camera.y + 250, 1, 0)
-    addStep(0, 100, 1, 10)
-    addStep(100, 300, 1, 5)
-    addStep(200, 400, 1, 2)
-    addStep(500, 200, 0.75, 2)
-    addStep(1500, 200, 0.75, 5)
-    addStep(0, 0, 0.5, 3)
-    addStep(0, 1500, 0.25, 3)
-    addStep(-1000, 0, 0.5, 3)
-    addStep(500, 1450, 0.25, 2.5)
-    addStep(3000, 0, 0.25, 5)
-    addStep(1500, 1000, 0.25, 5)
-    addStep(150, 0, 0.25, 3)
-    addStep(0, 2000, 0.5, 3)
-    addStep(1100, 2000, 0.5, 10)
-    addStep(0, 0, 0.5, 7)
-    addStep(2000, 500, 0.5, 5)
-    addStep(1500, 0, 0.5, 7)
-    addStep(0, 1500, 0.75, 20)
-    addStep(0, 500, 0.5, 20)
+    // addStep(Camera.x + 500, Camera.y + 250, 1, 0)
+    // addStep(0, 100, 1, 10)
+    // addStep(100, 300, 1, 5)
+    // addStep(200, 400, 1, 2)
+    // addStep(500, 200, 0.75, 2)
+    // addStep(1500, 200, 0.75, 5)
+    // addStep(0, 0, 0.5, 3)
+    // addStep(0, 1500, 0.25, 3)
+    // addStep(-1000, 0, 0.5, 3)
+    // addStep(500, 1450, 0.25, 2.5)
+    // addStep(3000, 0, 0.25, 5)
+    // addStep(1500, 1000, 0.25, 5)
+    // addStep(150, 0, 0.25, 3)
+    // addStep(0, 2000, 0.5, 3)
+    // addStep(1100, 2000, 0.5, 10)
+    // addStep(0, 0, 0.5, 7)
+    // addStep(2000, 500, 0.5, 5)
+    // addStep(1500, 0, 0.5, 7)
+    // addStep(0, 1500, 0.75, 20)
+    // addStep(0, 500, 0.5, 20)
 
     console.log("Running engine, started")
 }
@@ -223,7 +223,12 @@ function draw() {
         nums = 15;
     }
     for (let i = 0; i < nums; i++) {
-        Matter.Engine.update(engine, 1000 / 60, 1);
+        for (let j = 0; j < modules.length; j++) {
+            let on = modules[j];
+            if (on && on.engine && !on.disabled) {
+                Matter.Engine.update(on.engine, 1000 / 60, 1);
+            }
+        }
         Camera.t += (1 / 60)
 
         if (onUpdate) {
@@ -296,21 +301,24 @@ function draw() {
         },
     }
 
-    let bodies = Composite.allBodies(world);
-    for (let obj of bodies) { //For each
-        push();
-        var boundsWidth = bounds.max.x - bounds.min.x,
-            boundsHeight = bounds.max.y - bounds.min.y,
-            boundsScaleX = boundsWidth / width,
-            boundsScaleY = boundsHeight / height;
+    modules.forEach((data) => {
+        let bodies = Composite.allBodies(data.world);
+        for (let obj of bodies) { //For each
+            push();
+            translate(data.xOffset * scaleFactor, data.yOffset * scaleFactor)
+            var boundsWidth = bounds.max.x - bounds.min.x,
+                boundsHeight = bounds.max.y - bounds.min.y,
+                boundsScaleX = boundsWidth / width,
+                boundsScaleY = boundsHeight / height;
 
-        scale(1 / boundsScaleX, 1 / boundsScaleY);
-        translate(-bounds.min.x, -bounds.min.y);
+            scale(1 / boundsScaleX, 1 / boundsScaleY);
+            translate(-bounds.min.x, -bounds.min.y);
 
-        drawBody(obj)
+            drawBody(obj)
 
-        pop();
-    }
+            pop();
+        }
+    })
 }
 
 function addStep(xDif, yDif, scale, time) {
@@ -323,6 +331,26 @@ function addStep(xDif, yDif, scale, time) {
 }
 
 function shiftInit(initFunction, xOffset, yOffset) {
+    let engine = Engine.create();
+    let world = engine.world;
+    initFunction({
+        world: world,
+        engine: engine,
+    })
+
+    modules.push(
+        {
+            xOffset: xOffset,
+            yOffset: yOffset,
+            world: world,
+            engine: engine,
+        }
+    )
+
+    return modules[modules.length - 1]
+
+    /*
+    Old code for singular-world model
     let stillTracking = true;
     let tracker = [];
 
@@ -365,13 +393,17 @@ function shiftInit(initFunction, xOffset, yOffset) {
         translateObj(on)
     }
 
-    return tracker;
+    return tracker; */
 }
 
-function removeInit(obj) {
-    obj.forEach(function(item) {
-        World.remove(world, item)
-    })
+function removeInit(module) {
+    //TODO: Make work with modules
+
+    module.disabled = true;
+
+    // obj.forEach(function(item) {
+    //     World.remove(world, item)
+    // })
 }
 
 /*-----------------------------------------------------*/
@@ -380,15 +412,18 @@ function removeInit(obj) {
  * Start coding your module here
  */
 
-//Just a nice simple function, not required
-function worldAdd(obj) {
-    World.add(world, obj)
-}
-
 /**
  * Gonzalez Module 1
  **/
-function gonzalezM1Init() {
+let m1to2car;
+function gonzalezM1Init(data) {
+    let world = data.world;
+    let engine = data.engine;
+    //Just a nice simple function, not required
+    function worldAdd(obj) {
+        World.add(world, obj)
+    }
+
     let barrierColor = "#090909"
     let barrier2Color = "#ff8300"
     let objectColor = "#224b88"
@@ -583,8 +618,11 @@ function gonzalezM1Init() {
             //The length defaults to 0 since it is generated off the original positions of the bodies
         });
 
-        World.add(world, [wheel1, wheel2, carBody, wheel1Constraint, wheel2Constraint]) //Add both wheels, the car body, and the constraints to world
-        return [wheel1, wheel2, carBody];
+        let compositeCar = Composite.create();
+
+        Composite.add(compositeCar, [wheel1, wheel2, carBody, wheel1Constraint, wheel2Constraint]) //Add both wheels, the car body, and the constraints to world
+        worldAdd(compositeCar)
+        return compositeCar
     }
 
     for (let i = 0; i < 3; i++) {
@@ -733,10 +771,7 @@ function gonzalezM1Init() {
 
     for (let i = 0; i < offsets.length; i++) {
         let offset = offsets[i];
-        let val = (1.02 - (i / 4 / 2))
-        if (i === 3) {
-            val *= 0.95;
-        }
+        let val = (1 - (i / 4 / 2))
         createSpring(2270 + offset, 4450, 300, 25, val)
     }
 
@@ -897,7 +932,14 @@ function gonzalezM1Init() {
         },
     }))
 
-    createCar(8050, 8400, 0.1)
+    m1to2car = createCar(8050, 8400, 0.1)
+
+    worldAdd(Bodies.rectangle(345 + 8772,342 + 70 + 9142,150,15, {
+        isStatic: true,
+        render: {
+            fillStyle: barrierColor,
+        },
+    }))
 }
 
 /**
@@ -906,7 +948,22 @@ function gonzalezM1Init() {
 
 var gandhiobjects = [];//array to hold the world objects
 //Initializes canvas with matter.js
-function gandhiM1Init() {
+function gandhiM1Init(data) {
+    let world = data.world;
+    let engine = data.engine;
+    //Just a nice simple function, not required
+    function worldAdd(obj) {
+        World.add(world, obj)
+    }
+
+    //Transition
+    worldAdd(Bodies.rectangle(8432 - 8772, 9125 - 9142, 1500, 15, {
+        isStatic: true,
+        angle: (35) * (Math.PI / 180),
+        render: {
+            fillStyle: "#090909",
+        },
+    }))
 
     //---------- Vertical Rectangles
     createRect(1870,909,10,120, true, "gray",0);
@@ -1107,7 +1164,9 @@ function gandhiM1Init() {
     //---------- Cradle End
 
 
-    addObjects(gandhiobjects);
+    for (let i=0;i<gandhiobjects.length;i++){
+        World.add(world, gandhiobjects[i])
+    }
 
 }
 
@@ -1137,11 +1196,6 @@ let rhc1, rhc2, rhc3, rhc4, rhc5, rhc6, rhc7, rhc8, rhc9, rhc10, rhc11, rhc12 ;
 let rhc = [];
 let catapultSquare;
 let car1, car2;
-function addObjects(obj) {
-    for (let i=0;i<obj.length;i++){
-        World.add(world, obj[i])
-    }
-}
 
 var changeGravity = false;
 var moveCircles = false;
@@ -1231,7 +1285,13 @@ function gandhiM1Update() {
 /**
  * Anandani Module 1
  **/
-function anandaniM1Init() {
+function anandaniM1Init(data) {
+    let world = data.world;
+    let engine = data.engine;
+    //Just a nice simple function, not required
+    function worldAdd(obj) {
+        World.add(world, obj)
+    }
     let bool1 = true;
     let bool2 = true;
     let bool3 = true;
@@ -1270,10 +1330,15 @@ function anandaniM1Init() {
 
     //worldAdd(Composites.car(200, 50, 100, 5, 10))
 
-    worldAdd(Bodies.circle(-100, 20, 45,
+    let m2to3ball = Bodies.circle(-100, 20, 45,
         {
             mass: 100,
-        }))
+        })
+    worldAdd(m2to3ball)
+
+    setTimeout(function() {
+        Body.setVelocity(m2to3ball, Vector.create(10, 3))
+    }, 1350)
 
     worldAdd(Bodies.rectangle(-100, 300, 20, 20, {
         angle: 0,
@@ -1421,6 +1486,8 @@ function anandaniM1Init() {
     let gravBall = Matter.Bodies.circle(4400, 1490, 25, { isStatic: false });
     worldAdd(gravBall)
 
+    m3to4ball = gravBall;
+
     worldAdd(Bodies.rectangle(5040, 950, 550, 20, { // Floor 2
         isStatic: true,
         angle: (35) * (Math.PI / 180),
@@ -1503,7 +1570,21 @@ function anandaniM1Init() {
 /**
  * Anandani Module 2
  **/
-function anandaniM2Init() {
+function anandaniM2Init(data) {
+    let world = data.world;
+    let engine = data.engine;
+    //Just a nice simple function, not required
+    function worldAdd(obj) {
+        World.add(world, obj)
+    }
+
+    let oX = 19300 - 14050
+    let oY = 12350 - 11350
+    worldAdd(Bodies.rectangle(5040 - oX, 950 - oY, 550, 20, { // Transitional
+        isStatic: true,
+        angle: (35) * (Math.PI / 180),
+    }))
+
     let world1Objects = []
     let world2Objects = []
     let bool1 = true
@@ -1529,32 +1610,29 @@ function anandaniM2Init() {
 
     //Regular ramp
     let baseRamp = Bodies.rectangle(50, 400, 600, 10, {angle: 145.5, isStatic: true})
-    let storedOffset = Vector.clone(baseRamp.position) //Timothy added this because stuff needs to be translated
     worldAdd(baseRamp)
     worldAdd(Bodies.rectangle(600, 650, 800, 10, {isStatic: true}))
     worldAdd(Bodies.rectangle(7000, 650, 1800, 100, {isStatic: true}))
+
     let startBall = Bodies.circle(20, 50, 10, {density: 0.01, friction: 0.0001, frictionAir: 0.00001})
-    worldAdd(Bodies.rectangle(20, 100, 15, 15, {
-        isStatic: true
-    }))
+    worldAdd(Bodies.rectangle(20, 70, 15, 15, {isStatic: true}))
     worldAdd(startBall)
 
 
     world1Objects.push(Bodies.rectangle(1060, 600, 200, 10, {angle: 134.6, isStatic: true})) //ramp
     world1Objects.push(Bodies.rectangle(1490, 560, 200, 10, {isStatic: true})) //pad1
-    world1Objects.push(Bodies.rectangle(2290, 660, 200, 20, {isStatic: true})) //bottom s
-    world1Objects.push(Bodies.rectangle(2390, 530, 20, 200, {isStatic: true})) //right s
-    world1Objects.push(Bodies.rectangle(2340, 250, 500, 20, {isStatic: true})) //top s
-    world1Objects.push(Bodies.rectangle(2190, 360, 20, 200, {isStatic: true})) //left s
-    world1Objects.push(Bodies.rectangle(2690, 360, 20, 200, {isStatic: true})) //top col
-    world1Objects.push(Bodies.rectangle(2690, 660, 20, 200, {isStatic: true})) //bottom col
-    world1Objects.push(Bodies.rectangle(2090, 1500, 600, 50, {angle: 145, isStatic: true}))
-    //world1Objects.push(Bodies.rectangle(2090, 1400, 30, 700, {angle: 145, isStatic: true})) //lower col
+    world1Objects.push(Bodies.rectangle(2290, 660, 200, 10, {isStatic: true})) //bottom s
+    world1Objects.push(Bodies.rectangle(2390, 560, 10, 120, {isStatic: true})) //right s
+    world1Objects.push(Bodies.rectangle(2290, 260, 200, 10, {isStatic: true})) //top s
+    world1Objects.push(Bodies.rectangle(2190, 360, 10, 200, {isStatic: true})) //left s
+    world1Objects.push(Bodies.rectangle(2690, 360, 10, 200, {isStatic: true})) //top col
+    world1Objects.push(Bodies.rectangle(2690, 660, 10, 200, {isStatic: true})) //bottom col
+    world1Objects.push(Bodies.rectangle(2090, 960, 10, 200, {isStatic: true})) //lower col
 
     world1Objects.push(Bodies.rectangle(3290, 1160, 1200, 50, {isStatic: true})) //box top
-    //world1Objects.push(Bodies.rectangle(2690, 1260, 50, 200, {isStatic: true})) //box up enter
-    //world1Objects.push(Bodies.rectangle(2690, 1660, 50, 160, {isStatic: true})) //box down enter
-    world1Objects.push(Bodies.rectangle(3290, 1760, 1250, 50, {isStatic: true})) //box bottom
+    world1Objects.push(Bodies.rectangle(2690, 1260, 50, 200, {isStatic: true})) //box up enter
+    world1Objects.push(Bodies.rectangle(2690, 1660, 50, 200, {isStatic: true})) //box down enter
+    world1Objects.push(Bodies.rectangle(3290, 1760, 1200, 50, {isStatic: true})) //box bottom
 
     for(i=3160;i<3800;i+=30){
         world1Objects.push(Matter.Bodies.rectangle(i, 1620, 10, 60, {mass:4}))
@@ -1594,8 +1672,7 @@ function anandaniM2Init() {
     Body.translate(cradle.bodies[0], { x: -209, y: -80 });
     world2Objects.push(cradle)
     world2Objects.push(Bodies.rectangle(3290, 1160, 50, 600, {isStatic: true}))
-    let superDab = Bodies.rectangle(3290, 600, 550, 20)
-    world2Objects.push(superDab)
+    world2Objects.push(Bodies.rectangle(3290, 600, 550, 20))
     world2Objects.push(Bodies.rectangle(2900, 1760, 1200, 50, {isStatic: true}))
     world2Objects.push(Bodies.rectangle(1700, 2390, 2000, 50, {isStatic: true}))
     for(i=1580;i<2000;i+=40){
@@ -1621,9 +1698,9 @@ function anandaniM2Init() {
 
     Events.on(engine, "collisionStart", (event) => {
         if(bool1){
-            if(startBall.position.x > baseRamp.position.x + 850){
-                Matter.Body.setVelocity(startBall, {x: 17, y: -5})
-                startBall.restitution = 0
+            if(startBall.position.x > baseRamp.position.x + 750){
+                Matter.Body.setVelocity(startBall, {x: 10, y: -10})
+                startBall.restitution = 1.4
                 bool1 = false
             }
         }
@@ -1640,7 +1717,6 @@ function anandaniM2Init() {
         if(bool3){
             if(superSquare.position.x > baseRamp.position.x + 4065){    //4115
                 Matter.Body.setVelocity(superSquare, {x: 20, y: -20})
-                Matter.Body.setVelocity(transCircle, {x: 5, y: 0})
                 bool3 = false
             }
         }
@@ -1648,16 +1724,7 @@ function anandaniM2Init() {
             if (transCircle.position.x > baseRamp.position.x + 7815){       //7865
                 Matter.Body.setVelocity(transCircle, {x: -20, y: 0})
                 world1Objects.forEach(element => Matter.World.remove(world, element))
-                world2Objects.forEach(element => {
-                    //Timothy added this because stuff needs to be translated
-                    let offset = (Vector.sub(Vector.clone(baseRamp.position), storedOffset))
-                    if (element.type === 'body') {
-                        Body.translate(element, offset)
-                    } else if (element.type === 'composite') {
-                        Composite.translate(element, offset)
-                    }
-                    worldAdd(element)
-                })
+                world2Objects.forEach(element => worldAdd(element))
                 bool4=false
                 bool5=true
             }
@@ -1669,10 +1736,8 @@ function anandaniM2Init() {
             }
         }
         if((bool6)){
-            if(bBlock.position.y > baseRamp.position.x + 1753){           //1800
-                Matter.Body.setVelocity(bBlock, {x: 0, y: -73})
-                Matter.Body.setVelocity(superDab, {x: -20, y: 0})
-                Body.translate(cradle.bodies[0], { x: -209, y: -90 });
+            if(bBlock.position.y > baseRamp.position.x + 1750){           //1800
+                Matter.Body.setVelocity(bBlock, {x: 0, y: -70})
                 bool6=false
             }
         }
@@ -1683,7 +1748,7 @@ function anandaniM2Init() {
             }
         }
         if(bool8){
-            if(finalCircle.position.x > (baseRamp.position.x + 710) && (finalCircle.position.y < (baseRamp.position.x + 1820) && finalCircle.position.y > (baseRamp.position.x + 1500))){   //770    1850   1550
+            if(finalCircle.position.x > (baseRamp.position.x + 720) && (finalCircle.position.y < (baseRamp.position.x + 1800) && finalCircle.position.y > (baseRamp.position.x + 1500))){   //770    1850   1550
                 Matter.Body.setVelocity(finalCircle, {x: -30, y: -20})
                 bool8=false
             }
@@ -1692,7 +1757,6 @@ function anandaniM2Init() {
             if(finalCircle.position.x > (baseRamp.position.x + 710)  && (finalCircle.position.y < (baseRamp.position.x + 1430)  && finalCircle.position.y > (baseRamp.position.x + 600) )){    //760   1480   650
                 Matter.Body.setVelocity(finalCircle, {x: -30, y: -15})
                 bool9=false
-                runNext();
             }
         }
         if(bool10){
@@ -1723,7 +1787,6 @@ function anandaniM2Init() {
                 }, 1000)
                 // newBall2.position.x += 5500
                 // newBall2.position.y -= 250
-
                 bool12=false
             }
         }
@@ -1733,7 +1796,13 @@ function anandaniM2Init() {
 /**
  * Gonzalez Module 2
  **/
-function gonzalezM2Init() {
+function gonzalezM2Init(data) {
+    let world = data.world;
+    let engine = data.engine;
+    //Just a nice simple function, not required
+    function worldAdd(obj) {
+        World.add(world, obj)
+    }
     let barrierColor = "#090909"
     let barrier2Color = "#ff8300"
     let barrier3Color = "#cd2020"
