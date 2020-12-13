@@ -148,12 +148,17 @@ function setup() {
                 removeInit(gandhiM1)
                 shiftInit(anandaniM2Init, 0, 0)
                 runNext = function() {
-                    shiftInit(gonzalezM2Init, 30000 - ronitXFactor, 30000 - ronitYFactor)
+                    removeInit(anandaniM1)
+                    shiftInit(gonzalezM2Init, 27100 - ronitXFactor, 12875 - ronitYFactor)
                     console.log('end')
                 }
             }
         }
     }
+
+    addStep(Camera.x + 500, Camera.y + 250, 1, 0)
+    addStep(0, 100, 1, 10)
+    addStep(0, 300, 1, 5)
 
     console.log("Running engine, started")
 }
@@ -228,6 +233,8 @@ function draw() {
             }
         }
 
+        console.log(Camera.t)
+        console.log(onStep)
         let nextStep = Camera.steps[onStep + 1];
         if (nextStep) { //not out of bounds
             let deltaT = (timeLeft) / nextStep.time
@@ -1668,6 +1675,7 @@ function anandaniM2Init() {
             if(finalCircle.position.x > (baseRamp.position.x + 710)  && (finalCircle.position.y < (baseRamp.position.x + 1430)  && finalCircle.position.y > (baseRamp.position.x + 600) )){    //760   1480   650
                 Matter.Body.setVelocity(finalCircle, {x: -30, y: -15})
                 bool9=false
+                runNext();
             }
         }
         if(bool10){
@@ -1698,6 +1706,7 @@ function anandaniM2Init() {
                 }, 1000)
                 // newBall2.position.x += 5500
                 // newBall2.position.y -= 250
+
                 bool12=false
             }
         }
@@ -2144,6 +2153,12 @@ function gonzalezM2Init() {
 
 
     createBall(300, 50, 30)
+    worldAdd(Bodies.rectangle(300, 100, 5, 5, {
+        isStatic: true,
+        render: {
+            fillStyle: barrierColor,
+        },
+    }))
 
     for (let y = 0; y < 5; y++) {
         let offset2 = (y % 2 === 0) ? -35 : 35
@@ -2601,7 +2616,7 @@ function gonzalezM2Init() {
     let counterrr = 0;
 
     // snowflake class | Credit to Aatish Bhatia for snowflake motion equation
-    let snowW = 2000;
+    let snowW = 1000;
     let snowH = 2000;
     let snowflakes = []
     function snowflake() {
@@ -2670,7 +2685,7 @@ function gonzalezM2Init() {
         image(img, this.position.x / v, this.position.y / v)
 
         if (lit) {
-            translate(1250, 0)
+            translate(2500, 600)
             for (let flake of snowflakes) {
                 flake.update((1 / 60));
                 flake.display();
