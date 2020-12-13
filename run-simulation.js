@@ -158,7 +158,24 @@ function setup() {
 
     addStep(Camera.x + 500, Camera.y + 250, 1, 0)
     addStep(0, 100, 1, 10)
-    addStep(0, 300, 1, 5)
+    addStep(100, 300, 1, 5)
+    addStep(200, 400, 1, 2)
+    addStep(500, 200, 0.75, 2)
+    addStep(1500, 200, 0.75, 5)
+    addStep(0, 0, 0.5, 3)
+    addStep(0, 1500, 0.25, 3)
+    addStep(-1000, 0, 0.5, 3)
+    addStep(500, 1450, 0.25, 2.5)
+    addStep(3000, 0, 0.25, 5)
+    addStep(1500, 1000, 0.25, 5)
+    addStep(150, 0, 0.25, 3)
+    addStep(0, 2000, 0.5, 3)
+    addStep(1100, 2000, 0.5, 10)
+    addStep(0, 0, 0.5, 7)
+    addStep(2000, 500, 0.5, 5)
+    addStep(1500, 0, 0.5, 7)
+    addStep(0, 1500, 0.75, 20)
+    addStep(0, 500, 0.5, 20)
 
     console.log("Running engine, started")
 }
@@ -230,11 +247,11 @@ function draw() {
                 posY += on.yDif;
                 scaleF = on.scale;
                 timeLeft -= on.time;
+            } else {
+                break
             }
         }
 
-        console.log(Camera.t)
-        console.log(onStep)
         let nextStep = Camera.steps[onStep + 1];
         if (nextStep) { //not out of bounds
             let deltaT = (timeLeft) / nextStep.time
