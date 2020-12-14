@@ -218,16 +218,35 @@ function setup() {
     addStep(-1000, -1500, 0.35, 0.75)
     addStep(0, 0, 0.35, 18)
     addStep(-2500, 600, 0.35, 0.75)
-    addStep(0, 0, 0.35, 4)
+    addStep(0, 0, 0.35, 5.5)
+
     addStep(-2000, 0, 0.35, 4)
     addStep(0, 0, 0.35, 4)
+
     addStep(0, -1250, 0.25, 3.5)
     addStep(7550, 0, 0.75, 1.5)
-    addStep(0, 0, 0.75, 8)
+    addStep(0, 0, 0.75, 2.25)
 
 
     //Timothy 2
-    addStep(200, 3000, 0.75, 10)
+    addStep(200, 1250, 0.75, 3.5)
+    addStep(400, 750, 0.75, 0.5)
+    addStep(400, -750, 0.25, 0.5)
+    addStep(1000, 800, 0.35, 2.5)
+    addStep(1500, 4000, 0.25, 5)
+    addStep(0, 1000, 0.15, 3)
+    addStep(-1000, 500, 0.75, 4.5)
+    addStep(1350, 3250, 0.45, 4)
+    addStep(2000, 2000, 0.25, 8)
+
+    addStep(1000, 1000, 0.25, 2)
+    addStep(1550, -1000, 0.25, 2)
+    addStep(0, -3000, 0.25, 5)
+    addStep(0, -1500, 0.15, 3)
+    addStep(1500, 0, 0.1, 1.5)
+    addStep(3250, 600, 0.5, 5)
+
+    addStep(0, 0, 0.5, 5)
 
     console.log("Running engine, started")
 }
@@ -333,6 +352,8 @@ function draw() {
             Camera.x = posX;
             Camera.y = posY;
             Camera.scale = scaleF;
+        } else {
+            lit = true;
         }
     }
 
@@ -1902,6 +1923,7 @@ function anandaniM2Init(data) {
 }
 
 let blowUpFinal;
+let lit = false; //it's lit
 /**
  * Gonzalez Module 2
  **/
@@ -2613,12 +2635,13 @@ function gonzalezM2Init(data) {
         isStatic: true,
         render: {
             fillStyle: barrierColor,
+            opacity: 0,
         },
     })
     antigrav.isSensor = true;
 
     let antiGravs = {}
-    antigrav.show = function() {
+    onUpdate = function() {
         //instead of showing, just give antigrav
         for (const [key, value] of Object.entries(antiGravs)) {
             let body = Composite.get(world, parseInt(key), 'body')
@@ -2768,7 +2791,6 @@ function gonzalezM2Init(data) {
     })
     worldAdd(stext);
 
-    let lit = false; //it's lit
     let already = false;
     Events.on(engine, "collisionStart", function (data) {
         if (already) {
@@ -2803,19 +2825,27 @@ function gonzalezM2Init(data) {
                                 pop()
                             }
                         }, 500)
-
-                        relTimeout(function() {
-                            lit = true;
-                        }, 10 * 1000)
                     }, 800)
                 }
             }
         }
     })
 
+    let vs = [[600, 0],[0, -400], [800, 0], [0, 900], [-300, 0], [0, 200], [200, 0], [0, 400], [-300, 0], [0, 500], [900, 0], [0, -1000], [500, 0], [0, -200], [700, 0], [0, 4000],
+        [500, 0], [0, 600], [-400, 0], [0, 500], [5450, 0], [0, -800]]
+
     createLineFromVertices(lx + 130 + 1000 + 25, ly - 250 + 250, 15,  false,
-        [[600, 0],[0, -400], [800, 0], [0, 900], [-300, 0], [0, 200], [200, 0], [0, 400], [-300, 0], [0, 500], [900, 0], [0, -1000], [500, 0], [0, -200], [700, 0], [0, 4000],
-            [500, 0], [0, 600], [-400, 0], [0, 500], [5450, 0], [0, -800]], true)
+        vs, true)
+
+
+    vs.unshift([500, 0])
+    for (let i = 0; i < vs.length; i++) {
+        let on = vs[i];
+        let t = Math.abs(on[0] + on[1]) / 4000
+        addStep(on[0], on[1], 0.5, t)
+    }
+
+    addStep(0, -1750, 0.075, 1)
 
     let img = loadImage('tree1.png')
 
