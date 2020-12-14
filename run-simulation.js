@@ -88,6 +88,18 @@ function simpleKeyPress(key, pressed) {
         case 'e':
             keyInputData.speed = pressed;
             break;
+        case 'r':
+            if (pressed) {
+                break;
+            }
+            Camera.t -= 0.25;
+            break;
+        case 't':
+            if (pressed) {
+                break;
+            }
+            Camera.t += 0.25;
+            break;
     }
 }
 
@@ -115,6 +127,8 @@ let runBefore = false;
 let modules = [];
 
 let runNext, onUpdate;
+
+let timeouts = [];
 
 function setup() {
     if (runBefore) {
@@ -156,6 +170,10 @@ function setup() {
         }
     }
 
+    // runNext();
+    // runNext();
+    // runNext();
+
     addStep(Camera.x + 500, Camera.y + 250, 1, 0)
     addStep(0, 100, 1, 10)
     addStep(100, 300, 1, 5)
@@ -176,7 +194,40 @@ function setup() {
     addStep(2000, 500, 0.5, 5)
     addStep(500, 0, 0.75, 3.15)
     addStep(0, 0, 0.75, 5)
-    addStep(500, -150, 1, 3)
+    addStep(650, -150, 1, 3)
+    addStep(0, 2000, 1, 15)
+    //Car moves to right
+    addStep(1000, 0, 0.35, 3)
+    addStep(2000, -200, 0.25, 3)
+
+    //Ronit
+    addStep(2000, 200, 0.35, 5)
+    addStep(1500, 200, 0.5, 3)
+    addStep(0, 750, 1, 6)
+    addStep(500, 0, 1, 2)
+    addStep(150, -500, 1, 3)
+    addStep(500, 500, 0.5, 2)
+
+    //Ronnit 2
+    addStep(1500, 150, 0.5, 3)
+    addStep(2500, 1500, 0.5, 2)
+    addStep(0, 0, 0.5, 10)
+    addStep(2250, 750, 0.35, 2)
+    addStep(1500, 0, 0.45, 2)
+    addStep(-1500, 0, 0.35, 2.5)
+    addStep(-1000, -1500, 0.35, 0.75)
+    addStep(0, 0, 0.35, 18)
+    addStep(-2500, 600, 0.35, 0.75)
+    addStep(0, 0, 0.35, 4)
+    addStep(-2000, 0, 0.35, 4)
+    addStep(0, 0, 0.35, 4)
+    addStep(0, -1250, 0.25, 3.5)
+    addStep(7550, 0, 0.75, 1.5)
+    addStep(0, 0, 0.75, 8)
+
+
+    //Timothy 2
+    addStep(200, 3000, 0.75, 10)
 
     console.log("Running engine, started")
 }
@@ -230,6 +281,14 @@ function draw() {
                 Matter.Engine.update(on.engine, 1000 / 60, 1);
             }
         }
+        for (let j = timeouts.length - 1; j >= 0; j--) {
+            let on = timeouts[j];
+            on.timeLeft -= (1000 / 60);
+            if (on.timeLeft <= 0) {
+                on.handler();
+                timeouts.splice(j, 1)
+            }
+        }
         Camera.t += (1 / 60)
 
         if (onUpdate) {
@@ -255,6 +314,12 @@ function draw() {
                 timeLeft -= on.time;
             } else {
                 break
+            }
+        }
+        if (onStep > 43) {
+            if (blowUpFinal) {
+                blowUpFinal();
+                blowUpFinal = false;
             }
         }
 
@@ -405,6 +470,14 @@ function removeInit(module) {
     // obj.forEach(function(item) {
     //     World.remove(world, item)
     // })
+}
+
+//A remodeled version of set timeout which is consistent with the physics engine. implemented in draw
+function relTimeout(handler, timeInMs) {
+    timeouts.push({
+        handler: handler,
+        timeLeft: timeInMs,
+    })
 }
 
 /*-----------------------------------------------------*/
@@ -1110,7 +1183,7 @@ function gandhiM1Init(data) {
     //---------- Plinko Non-Static Balls End
 
     //Plinko Static Balls End
-    var xPos = 2580;
+    var xPos = 2590;
     var yPos = 1370;
     var oddRow = false;
     for (i=0;i<6;i++){
@@ -1206,56 +1279,57 @@ var pressurePlate3 = false;
 //Runs every frame if you need to check something every frame
 function gandhiM1Update() {
     if (catapultSquare.position.x>rect6.position.x&&catapultSquare.position.x<rect6.position.x+50&&catapultSquare.position.y>rect6.position.y+85){
-        setTimeout(function () {
+        relTimeout(function () {
             Body.applyForce( car1.bodies[0], {x: car1.bodies[0].position.x, y: car1.bodies[0].position.y}, {x: 0.003, y: 0})
         },500)
 
     }
     if (catapultSquare.position.x>rect12.position.x+25&&changeGravity==false){
         changeGravity = true;
-        setTimeout(function () {
+        relTimeout(function () {
             Body.setVelocity( catapultSquare, {x: 0, y: -50});
         },500)
     }
     if (catapultSquare.position.x>catapult3.position.x-70&&moveCircles==false){
         moveCircles = true;
-        setTimeout(function () {
+        relTimeout(function () {
+            Body.setVelocity( rhc1, {x: 7, y: 0});
             Body.setVelocity( rhc2, {x: -7, y: 0});
         }, 1200);
-        setTimeout(function () {
+        relTimeout(function () {
             Body.setVelocity( rhc3, {x: 9, y: 0});
         }, 2100);
-        setTimeout(function () {
+        relTimeout(function () {
             Body.setVelocity( rhc4, {x: -9, y: 0});
         }, 3000);
-        setTimeout(function () {
+        relTimeout(function () {
             Body.setVelocity( rhc5, {x: 7, y: 0});
         }, 3900);
-        setTimeout(function () {
+        relTimeout(function () {
             Body.setVelocity( rhc6, {x: -9, y: 0});
         }, 4800);
-        setTimeout(function () {
+        relTimeout(function () {
             Body.setVelocity( rhc7, {x: 10, y: 0});
         }, 5700);
-        setTimeout(function () {
+        relTimeout(function () {
             Body.setVelocity( rhc8, {x: -7, y: 0});
         }, 6600);
-        setTimeout(function () {
+        relTimeout(function () {
             Body.setVelocity( rhc9, {x: 7, y: 0});
         }, 7500);
-        setTimeout(function () {
+        relTimeout(function () {
             Body.setVelocity( rhc10, {x: -8, y: 0});
         }, 8400);
-        setTimeout(function () {
+        relTimeout(function () {
             Body.setVelocity( rhc11, {x: 11, y: 0});
         }, 9300);
-        setTimeout(function () {
+        relTimeout(function () {
             Body.setVelocity( rhc12, {x: -9, y: 0});
         }, 10200);
     }
     if (afterCircles==false){
         var circlesFall = true;
-        for (var k=0;k<12;k++){
+        for (var k=0;k<11;k++){
             if (rhc[k].position.y<catapult2.position.y+250){
                 circlesFall = false;
                 break;
@@ -1263,17 +1337,17 @@ function gandhiM1Update() {
         }
         if (circlesFall==true){
             afterCircles = true;
-            setTimeout(function () {
+            relTimeout(function () {
                 Body.applyForce( car2.bodies[0], {x: car2.bodies[0].position.x, y: car2.bodies[0].position.y}, {x: 1, y: 0})
-            }, 1500)
-            setTimeout(function () {
                 runNext();
+            }, 1500)
+            relTimeout(function () {
                 Body.applyForce( car2.bodies[0], {x: car2.bodies[0].position.x, y: car2.bodies[0].position.y}, {x: 1, y: 0})
             }, 3500)
-            setTimeout(function () {
+            relTimeout(function () {
                 Body.applyForce( car2.bodies[0], {x: car2.bodies[0].position.x, y: car2.bodies[0].position.y}, {x: .8, y: 0})
 
-                setTimeout(function() {
+                relTimeout(function() {
                     Body.setVelocity(firstP123, Vector.create(20, 0))
                 }, 500)
             }, 4500)
@@ -1337,9 +1411,9 @@ function anandaniM1Init(data) {
         })
     worldAdd(m2to3ball)
 
-    setTimeout(function() {
+    relTimeout(function() {
         Body.setVelocity(m2to3ball, Vector.create(10, 3))
-    }, 1350)
+    }, 3350)
 
     worldAdd(Bodies.rectangle(-100, 300, 20, 20, {
         angle: 0,
@@ -1474,8 +1548,8 @@ function anandaniM1Init(data) {
         isStatic: true
     }))
 
-    let car2 = Composites.car(4000, 1500, 100, 5, 10)
-    worldAdd(car2)
+    // let car2 = Composites.car(4000, 1500, 100, 5, 10)
+    // worldAdd(car2)
 
     worldAdd(Bodies.rectangle(4400, 1100, 50, 720, { // lWall
         isStatic: true
@@ -1553,7 +1627,7 @@ function anandaniM1Init(data) {
                 //Body.applyForce(gravBall,{x: gravBall.position.x, y: gravBall.position.y}, {x: 0, y: -160})
                 Matter.Body.setVelocity(gravBall, {x: 4, y: -46})
                 Body.applyForce( gravBall, {x: gravBall.position.x, y: gravBall.position.y}, {x: 0, y: -1000.15});
-                setTimeout(function() {
+                relTimeout(function() {
                     for(i=1;i<=120;i++){
                         //console.log("hello")
                         stackArray.forEach(element => Matter.World.remove(world, element))
@@ -1621,7 +1695,7 @@ function anandaniM2Init(data) {
     }))
     worldAdd(startBall)
 
-    setTimeout(function() {
+    relTimeout(function() {
         World.remove(world, m3to4ball)
     }, 10000)
 
@@ -1633,7 +1707,7 @@ function anandaniM2Init(data) {
     world1Objects.push(Bodies.rectangle(2190, 360, 20, 200, {isStatic: true})) //left s
     world1Objects.push(Bodies.rectangle(2690, 360, 20, 200, {isStatic: true})) //top col
     world1Objects.push(Bodies.rectangle(2690, 660, 20, 200, {isStatic: true})) //bottom col
-    world1Objects.push(Bodies.rectangle(2090, 1500, 600, 50, {angle: 145, isStatic: true}))
+    world1Objects.push(Bodies.rectangle(2090, 1500, 1600, 50, {angle: 144.9, isStatic: true}))
     //world1Objects.push(Bodies.rectangle(2090, 1400, 30, 700, {angle: 145, isStatic: true})) //lower col
 
     world1Objects.push(Bodies.rectangle(3290, 1160, 1200, 50, {isStatic: true})) //box top
@@ -1644,7 +1718,13 @@ function anandaniM2Init(data) {
     for(i=3160;i<3820;i+=20){
         world1Objects.push(Matter.Bodies.rectangle(i, 1620, 10, 60))
     }
-    world1Objects.push(Composites.car(3884.771, 1630, 100, 5, 10))
+    let car = Composites.car(3884.771, 1630, 100, 5, 10)
+    world1Objects.push(car)
+
+    relTimeout(function() {
+        Body.setVelocity(car.bodies[0], Vector.create(20, 0))
+    }, 14000)
+
     world1Objects.push(Bodies.rectangle(3870, 2400, 600, 50, {angle: 145, isStatic: true}))
     world1Objects.push(Bodies.rectangle(4400, 2520, 600, 50, {isStatic: true}))
     let superSquare = Bodies.rectangle(4100, 2450, 30, 30)
@@ -1809,7 +1889,7 @@ function anandaniM2Init(data) {
             if(newBall2.position.x > (baseRamp.position.x + 830) ){      //880
                 Matter.Body.translate(newBall2, {x: 5500, y: -40})
                 Matter.Body.setVelocity(newBall2, {x: 10, y: 0})
-                setTimeout(function() {
+                relTimeout(function() {
                     Matter.Body.setVelocity(newBall2, {x: 15, y: 0})
                 }, 1000)
                 // newBall2.position.x += 5500
@@ -1821,6 +1901,7 @@ function anandaniM2Init(data) {
     })
 }
 
+let blowUpFinal;
 /**
  * Gonzalez Module 2
  **/
@@ -2266,18 +2347,30 @@ function gonzalezM2Init(data) {
     }
 
 
-    let ball = createBall(300, 50, 30)
+    let ball = createBall(280, 50, 30)
 
-    setTimeout(function() {
-        Body.setVelocity(ball, Vector.create(2, 0))
-    }, 8000)
-
-    worldAdd(Bodies.rectangle(300, 100, 5, 5, {
+    let blocker = Bodies.rectangle(280, 100, 5, 5, {
         isStatic: true,
         render: {
             fillStyle: barrierColor,
         },
-    }))
+    })
+    worldAdd(blocker)
+
+    blowUpFinal = function() {
+        blocker.show = function() {
+            push()
+            noStroke();
+            fill("#ff8700")
+            circle(this.position.x, this.position.y, 20)
+            pop()
+        }
+        relTimeout(function() {
+            World.remove(world, blocker)
+        }, 100)
+
+    }
+
 
     for (let y = 0; y < 5; y++) {
         let offset2 = (y % 2 === 0) ? -35 : 35
@@ -2453,7 +2546,7 @@ function gonzalezM2Init(data) {
                 if (on.bodyB.id === bottom.id) {
                     if (counter === 2) {
                         Body.setVelocity(bottom, Vector.add(Vector.create(50, 0), Vector.clone(bottom.velocity)))
-                        setTimeout(function() {
+                        relTimeout(function() {
                             World.remove(world, bottom)
                         }, 2500)
                     }
@@ -2630,7 +2723,7 @@ function gonzalezM2Init(data) {
 
     Body.setVelocity(lever, Vector.create(0, -150))
 
-    setTimeout(function() {
+    relTimeout(function() {
         Body.setStatic(lever, true)
     }, 100)
 
@@ -2688,10 +2781,10 @@ function gonzalezM2Init(data) {
                 if (on.bodyB.id === leverp2.id && on.bodyA.id !== lever.id) {
                     already = true;
                     Body.setStatic(lever,false)
-                    setTimeout(function() {
+                    relTimeout(function() {
                         Body.setStatic(lever,true)
                         screen.render.fillStyle = "#1a65f5"
-                        setTimeout(function() {
+                        relTimeout(function() {
                             let count = 0;
                             stext.show = function() {
                                 push()
@@ -2711,7 +2804,7 @@ function gonzalezM2Init(data) {
                             }
                         }, 500)
 
-                        setTimeout(function() {
+                        relTimeout(function() {
                             lit = true;
                         }, 10 * 1000)
                     }, 800)
@@ -2804,7 +2897,7 @@ function gonzalezM2Init(data) {
         image(img, this.position.x / v, this.position.y / v)
 
         if (lit) {
-            translate(2500, 600)
+            translate(1750, 600)
             for (let flake of snowflakes) {
                 flake.update((1 / 60));
                 flake.display();
