@@ -818,6 +818,9 @@ function gonzalezM1Init(data) {
             pointA: Vector.create(-(w * 0.5), 0),
             pointB: Vector.add(Vector.create(-(w * 0.5), -(w * 0.5)), Matter.Vector.create(trampoline.position.x, trampoline.position.y)),
             stiffness: 0.001,
+            render: {
+                visible: false,
+            }
         })
 
         let rightConstraint = Constraint.create({
@@ -825,6 +828,9 @@ function gonzalezM1Init(data) {
             pointA: Vector.create((w * 0.5), 0),
             pointB: Vector.add(Vector.create((w * 0.5), -(w * 0.5)), Matter.Vector.create(trampoline.position.x, trampoline.position.y)),
             stiffness: 0.001,
+            render: {
+                visible: false,
+            }
         })
 
         worldAdd([trampoline, leftConstraint, rightConstraint])
@@ -2232,6 +2238,9 @@ function gonzalezM2Init(data) {
             pointA: Vector.create(-(w * 0.5), 0),
             pointB: Vector.add(Vector.create(-(w * 0.5), -(w * 0.5)), Matter.Vector.create(trampoline.position.x, trampoline.position.y)),
             stiffness: 0.001,
+            render: {
+                visible: false,
+            }
         })
 
         let rightConstraint = Constraint.create({
@@ -2239,6 +2248,9 @@ function gonzalezM2Init(data) {
             pointA: Vector.create((w * 0.5), 0),
             pointB: Vector.add(Vector.create((w * 0.5), -(w * 0.5)), Matter.Vector.create(trampoline.position.x, trampoline.position.y)),
             stiffness: 0.001,
+            render: {
+                visible: false,
+            }
         })
 
         worldAdd([trampoline, leftConstraint, rightConstraint])
