@@ -3086,6 +3086,7 @@ function gonzalezM2Init(data) {
 
         this.display = function() {
             noStroke();
+            fill('#ffffff')
             ellipse(this.posX, this.posY, this.size);
         };
     }
