@@ -57,8 +57,8 @@ let keyInputData = {
 
 let Camera = {
     //Define base camera x and y
-    x: 0,
-    y: 0,
+    x: -1000,
+    y: -1000,
     scale: 1,
     steps: [],
     t: 0,
@@ -100,6 +100,9 @@ function simpleKeyPress(key, pressed) {
             }
             Camera.t += 0.25;
             break;
+        case 'Enter':
+            started = true;
+            break;
     }
 }
 
@@ -128,7 +131,13 @@ let modules = [];
 
 let runNext, onUpdate;
 
+let started = false;
+
+let sound;
+let soundPlaying = false
+
 let timeouts = [];
+
 
 function setup() {
     if (runBefore) {
@@ -140,6 +149,8 @@ function setup() {
     let actualH = constWindowHeight - (constActualPaddingToUse * 2); //The actual height to use
     createCanvas(actualW, actualH)
     console.log("Running inits")
+
+    let menu = shiftInit(gonzalezM0, -1000, -1000)
 
     let gonzalezM1 = shiftInit(gonzalezM1Init, 0, 0);
     onUpdate = null;
@@ -164,7 +175,6 @@ function setup() {
                 runNext = function() {
                     removeInit(anandaniM1)
                     shiftInit(gonzalezM2Init, 27100, 12875)
-                    console.log('end')
                 }
             }
         }
@@ -174,7 +184,7 @@ function setup() {
     // runNext();
     // runNext();
 
-    addStep(Camera.x + 500, Camera.y + 250, 1, 0)
+    addStep(Camera.x + 500 + 1000, Camera.y + 250 + 1000, 1, 0)
     addStep(0, 100, 1, 10)
     addStep(100, 300, 1, 5)
     addStep(200, 400, 1, 2)
@@ -195,7 +205,7 @@ function setup() {
     addStep(500, 0, 0.75, 3.15)
     addStep(0, 0, 0.75, 5)
     addStep(650, -150, 1, 3)
-    addStep(0, 2000, 1, 15)
+    addStep(0, 2000, 1, 14.5)
     //Car moves to right
     addStep(1000, 0, 0.35, 3)
     addStep(2000, -200, 0.25, 3)
@@ -247,7 +257,6 @@ function setup() {
     addStep(3250, 600, 0.5, 5)
 
     addStep(0, 0, 0.5, 5)
-
     console.log("Running engine, started")
 }
 
@@ -288,72 +297,144 @@ function drawBody(body, showF, iterative) {
     }
 }
 
+function drawConstraint(constraint) {
+    let realWorldPA = constraint.pointA;
+    if (!realWorldPA) {
+        realWorldPA = Vector.create(0,0)
+    }
+    if (constraint.bodyA) {
+        realWorldPA = Vector.add(realWorldPA, constraint.bodyA.position)
+    }
+
+    let realWorldPB = constraint.pointB;
+    if (!realWorldPB) {
+        realWorldPB = Vector.create(0,0)
+    }
+    if (constraint.bodyB) {
+        realWorldPB = Vector.add(realWorldPB, constraint.bodyB.position)
+    }
+
+    if (constraint.render.visible) {
+        fill('#000000')
+        noStroke();
+        circle(realWorldPA.x, realWorldPA.y, 5)
+        circle(realWorldPB.x, realWorldPB.y, 5)
+
+        if (realWorldPA.x - realWorldPB.x !== 0 || realWorldPA.y - realWorldPB.y !== 0) {
+            stroke('#000000')
+            let weight = 5 || constraint.render.lineWidth;
+            strokeWeight(weight)
+            line(realWorldPA.x, realWorldPA.y, realWorldPB.x, realWorldPB.y)
+        }
+    }
+}
+
+let volume = 0.05
 function draw() {
+    if (started) {
+        if (lit) {
+            volume -= (0.05) / 300
+            if (volume <= 0) {
+                volume = 0;
+            }
+            sound.volume = volume
+        }
+
+        if (!soundPlaying) {
+            sound = document.getElementById("myAudio");
+            sound.volume = volume
+            let playPromise = sound.play();
+
+            if (playPromise !== undefined) {
+                playPromise.then(_ => {
+                    soundPlaying = true
+                    sound.onended = function () {
+                        soundPlaying = false
+                    }
+                })
+                    .catch(error => {
+                        console.log(error)
+                    });
+            }
+
+        }
+    }
+
     let nums = 1;
     if (keyInputData.speed) {
         nums = 15;
     }
-    for (let i = 0; i < nums; i++) {
-        for (let j = 0; j < modules.length; j++) {
-            let on = modules[j];
-            if (on && on.engine && !on.disabled) {
-                Matter.Engine.update(on.engine, 1000 / 60, 1);
-            }
-        }
-        for (let j = timeouts.length - 1; j >= 0; j--) {
-            let on = timeouts[j];
-            on.timeLeft -= (1000 / 60);
-            if (on.timeLeft <= 0) {
-                on.handler();
-                timeouts.splice(j, 1)
-            }
-        }
-        Camera.t += (1 / 60)
 
-        if (onUpdate) {
-            onUpdate();
-        }
+    if (sound) {
+        sound.playbackRate = nums;
     }
 
-    if (!Camera.steps[0]) {
-        console.log("Camera not setup")
-    } else {
-        let posX = Camera.steps[0].xDif;
-        let posY = Camera.steps[0].yDif;
-        let scaleF = 1;
-        let onStep = 0;
-        let timeLeft = Camera.t;
-        for (let i = 1; i < Camera.steps.length; i++) {
-            let on = Camera.steps[i];
-            if (timeLeft > on.time) {
-                onStep = i;
-                posX += on.xDif;
-                posY += on.yDif;
-                scaleF = on.scale;
-                timeLeft -= on.time;
-            } else {
-                break
+
+        for (let i = 0; i < nums; i++) {
+            for (let j = 0; j < modules.length; j++) {
+                let on = modules[j];
+                if (on && on.engine && !on.disabled && (started || j === 0)) {
+                    Matter.Engine.update(on.engine, 1000 / 60, 1);
+                }
             }
-        }
-        if (onStep > 43) {
-            if (blowUpFinal) {
-                blowUpFinal();
-                blowUpFinal = false;
+            for (let j = timeouts.length - 1; j >= 0; j--) {
+                let on = timeouts[j];
+                on.timeLeft -= (1000 / 60);
+                if (on.timeLeft <= 0) {
+                    on.handler();
+                    timeouts.splice(j, 1)
+                }
+            }
+            if (started) {
+                Camera.t += (1 / 60)
+            }
+
+            if (onUpdate) {
+                onUpdate();
             }
         }
 
-        let nextStep = Camera.steps[onStep + 1];
-        if (nextStep) { //not out of bounds
-            let deltaT = (timeLeft) / nextStep.time
-            posX += (nextStep.xDif * deltaT)
-            posY += (nextStep.yDif * deltaT)
-            scaleF += ((nextStep.scale - scaleF) * deltaT)
-
-            Camera.x = posX;
-            Camera.y = posY;
-            Camera.scale = scaleF;
+    if (started) {
+        if (!Camera.steps[0]) {
+            console.log("Camera not setup")
         } else {
-            lit = true;
+            let posX = Camera.steps[0].xDif;
+            let posY = Camera.steps[0].yDif;
+            let scaleF = 1;
+            let onStep = 0;
+            let timeLeft = Camera.t;
+            for (let i = 1; i < Camera.steps.length; i++) {
+                let on = Camera.steps[i];
+                if (timeLeft > on.time) {
+                    onStep = i;
+                    posX += on.xDif;
+                    posY += on.yDif;
+                    scaleF = on.scale;
+                    timeLeft -= on.time;
+                } else {
+                    break
+                }
+            }
+            if (onStep > 43) {
+                if (blowUpFinal) {
+                    blowUpFinal();
+                    blowUpFinal = false;
+                }
+            }
+
+            let nextStep = Camera.steps[onStep + 1];
+            if (nextStep) { //not out of bounds
+                let deltaT = (timeLeft) / nextStep.time
+                posX += (nextStep.xDif * deltaT)
+                posY += (nextStep.yDif * deltaT)
+                scaleF += ((nextStep.scale - scaleF) * deltaT)
+
+                Camera.x = posX;
+                Camera.y = posY;
+                Camera.scale = scaleF;
+            } else {
+                lit = true;
+            }
         }
     }
 
@@ -374,7 +455,9 @@ function draw() {
         Camera.y += change[1] * cameraSpeed;
     }
 
-    background(51);
+    noStroke()
+    fill(51)
+    rect(-15, -15, width + 15, height + 15)
     let scaleFactor = Camera.scale * (constWindowWidth / baseW);
 
     let bounds = {
@@ -389,8 +472,7 @@ function draw() {
     }
 
     modules.forEach((data) => {
-        let bodies = Composite.allBodies(data.world);
-        for (let obj of bodies) { //For each
+        function runTranslatedHandler(handler, obj) {
             push();
             translate(data.xOffset * scaleFactor, data.yOffset * scaleFactor)
             var boundsWidth = bounds.max.x - bounds.min.x,
@@ -401,9 +483,19 @@ function draw() {
             scale(1 / boundsScaleX, 1 / boundsScaleY);
             translate(-bounds.min.x, -bounds.min.y);
 
-            drawBody(obj)
+            handler(obj)
 
             pop();
+        }
+
+        let bodies = Composite.allBodies(data.world);
+        for (let obj of bodies) { //For each
+            runTranslatedHandler(drawBody, obj)
+        }
+
+        let constraints = Composite.allConstraints(data.world);
+        for (let obj of constraints) { //For each
+            runTranslatedHandler(drawConstraint, obj)
         }
     })
 }
@@ -506,6 +598,98 @@ function relTimeout(handler, timeInMs) {
 /**
  * Start coding your module here
  */
+
+
+/**
+ * Gonzalez Module Menu
+ **/
+function gonzalezM0(data) {
+    let world = data.world;
+    let engine = data.engine;
+    //Just a nice simple function, not required
+    function worldAdd(obj) {
+        World.add(world, obj)
+    }
+
+    let barrierColor = "#090909"
+    let barrier2Color = "#ff8300"
+    let barrier3Color = "#fa2525"
+    let objectColor = "#224b88"
+
+    let ys = 300
+
+    worldAdd(Bodies.circle(0, -50, 10, {
+        isStatic: true,
+        render: {
+            fillStyle: barrierColor
+        }
+    }))
+
+    worldAdd(Bodies.rectangle(0, -150 - ys, 750, 15, {
+        render: {
+            fillStyle: objectColor
+        }
+    }))
+
+    worldAdd(Bodies.rectangle(-300, -350 - ys, 50, 50, {
+        density: 0.0005,
+        render: {
+            fillStyle: barrier3Color
+        }
+    }))
+
+    worldAdd(Bodies.circle(300, -550 - ys, 50, {
+        density: 0.0005,
+        render: {
+            fillStyle: barrier2Color
+        }
+    }))
+
+    worldAdd(Bodies.circle(-300, -950 - ys, 50, {
+        density: 0.1,
+        render: {
+            fillStyle: barrier2Color
+        }
+    }))
+
+    let iw = 900
+    let ih = 60;
+    let intro = Bodies.rectangle(-30, -2950 - ys, iw, ih, {
+        restitution: 0.4,
+        render: {
+            fillStyle: barrier2Color
+        }
+    })
+
+    intro.show = function() {
+        push()
+        fill(objectColor)
+        rectMode(CENTER)
+        translate(this.position.x, this.position.y)
+        rotate(this.angle)
+        rect(0, 0, iw, ih)
+        rotate(-this.angle)
+
+        translate(0, 3)
+        rotate(this.angle)
+
+        fill("#ffffff")
+        textFont("Arial");
+        textStyle(BOLD);
+        textAlign(CENTER, CENTER);
+        textSize(50);
+        text("Press ENTER to start", 0, 0)
+        rectMode(CORNER)
+        pop()
+    }
+
+    worldAdd(intro)
+
+    relTimeout(function() {
+        World.clear(world)
+        gonzalezM0(data)
+    }, 9000)
+}
 
 /**
  * Gonzalez Module 1
@@ -1075,7 +1259,7 @@ function gandhiM1Init(data) {
     //---------- Horizontal Rectangles
     createRect(686,481,475,15, true, "gray",0);
     createRect(1200,1033,10,10, true, "gray",0);
-    createRect(2590,670,10,10, true, "gray",0);
+    createRect(2570,680,10,10, true, "gray",0);
     createRect(1950,1060,550,10, true, "gray",0);
     createRect(2210,1006,20,10, true, "gray",0);
     createRect(3250,2700,1750,10, true, "gray",0);
@@ -1089,7 +1273,7 @@ function gandhiM1Init(data) {
     createRect(2220,495,370,10, true, "gray",-57);
     createRect(2245,580,170,10, true, "gray",-57);
     createRect(2420,410,240,10, true, "gray",34);
-    createRect(2401,582,275,10, true, "gray",34);
+    createRect(2401,582,275,10, true, "gray",29);
     createRect(4245,2554,300,10, true, "gray",-25);
     createRect(4261,2635,300,10, true, "gray",-25);
     //createRect(4345,2594,500,10, true, "gray",-25);
@@ -1151,7 +1335,7 @@ function gandhiM1Init(data) {
         length: 0
     }));
 
-    catapult2 = Bodies.rectangle(2780, 2050, 400, 10, { frictionAir: 0,density:0.00005,collisionFilter: { group: group }, render:{fillStyle:'dodgerblue'}});
+    catapult2 = Bodies.rectangle(2780, 2050, 375, 10, { frictionAir: 0,density:0.00005,collisionFilter: { group: group }, render:{fillStyle:'dodgerblue'}});
     gandhiobjects.push(catapult2, Constraint.create({
         bodyA: catapult2,
         pointB: Vector.clone(catapult2.position),
@@ -1160,7 +1344,7 @@ function gandhiM1Init(data) {
         length: 0
     }));
 
-    catapult3 = Bodies.rectangle(2600, 520, 10, 485, { frictionAir: 0.1,density:0.000000005,collisionFilter: { group: group }, render:{fillStyle:'dodgerblue'}, angle: 30*(Math.PI/180)});
+    catapult3 = Bodies.rectangle(2600, 520, 10, 450, { frictionAir: 0.1,density:0.00000000005,collisionFilter: { group: group }, render:{fillStyle:'dodgerblue'}, angle: 30*(Math.PI/180)});
     gandhiobjects.push(catapult3, Constraint.create({
         bodyA: catapult3,
         pointB: Vector.clone(catapult3.position),
@@ -1189,7 +1373,7 @@ function gandhiM1Init(data) {
     gandhiobjects.push(Bodies.rectangle(2500,1370,10,1225,{ isStatic: true, render: {fillStyle:'gray'}}));//plinko wall 1
     gandhiobjects.push(Bodies.rectangle(3050,1350,10,1250,{ isStatic: true, render: {fillStyle:'gray'}}));//plinko wall 2
     gandhiobjects.push(rh3 = Bodies.rectangle(2525,750,50,10,{ isStatic: true, render: {fillStyle:'gray'}}));// first spike
-    gandhiobjects.push(rhc1 = Bodies.circle(2530, 700, 22.5, {friction: 0.01, frictionAir: 0.025, restitution:0.5, render: {fillStyle: "darkviolet"}}));
+    gandhiobjects.push(rhc1 = Bodies.circle(2530, 700, 22.5, {friction: 0, frictionAir: 0, restitution:0.5, density: 0.05, render: {fillStyle: "darkviolet"}}));
     gandhiobjects.push(rhc2 = Bodies.circle(3020, 700, 22.5, {friction: 0.01, frictionAir: 0.025,restitution:0.5, render: {fillStyle: "dodgerblue"}}));
     gandhiobjects.push(rhc3 = Bodies.circle(2530, 800, 22.5, {friction: 0.01, frictionAir: 0.025,restitution:0.5, render: {fillStyle: "dodgerblue"}}));
     gandhiobjects.push(rhc4 = Bodies.circle(3020, 800, 22.5, {friction: 0.01, frictionAir: 0.025,restitution:0.5, render: {fillStyle: "darkviolet"}}));
@@ -1237,14 +1421,14 @@ function gandhiM1Init(data) {
     //---------- Cloth
     var group2 = Body.nextGroup(true),
         particleOptions = { friction: 0.00001, collisionFilter: { group: group2 }, render: { visible: false, fillStyle: 'skyblue' }},
-        constraintOptions = { stiffness: 0.06 },
+        constraintOptions = { stiffness: 0.06, render: { visible: false} },
         cloth = Composites.softBody(2750, 2515, 13, 5, 5, 5, false, 13, particleOptions, constraintOptions);
     for (var i = 0; i < 13; i++) {
         cloth.bodies[i].isStatic = true;
     }
     var group3 = Body.nextGroup(true),
         particleOptions2 = { friction: 0.00001, collisionFilter: { group: group3 }, render: { visible: false, fillStyle: 'skyblue' }},
-        constraintOptions2 = { stiffness: 0.06 },
+        constraintOptions2 = { stiffness: 0.06, render: { visible: false} },
         cloth2 = Composites.softBody(3550, 2515, 13, 5, 5, 5, false, 13, particleOptions2, constraintOptions2);
     for (var k = 0; k < 13; k++) {
         cloth2.bodies[k].isStatic = true;
@@ -1313,8 +1497,8 @@ function gandhiM1Update() {
     }
     if (catapultSquare.position.x>catapult3.position.x-70&&moveCircles==false){
         moveCircles = true;
+        Body.setVelocity( rhc1, {x: 4, y: 0});
         relTimeout(function () {
-            Body.setVelocity( rhc1, {x: 7, y: 0});
             Body.setVelocity( rhc2, {x: -7, y: 0});
         }, 1200);
         relTimeout(function () {
@@ -2845,7 +3029,7 @@ function gonzalezM2Init(data) {
         addStep(on[0], on[1], 0.5, t)
     }
 
-    addStep(0, -1750, 0.075, 1)
+    addStep(0, -1850, 0.075, 0.5)
 
     let img = loadImage('tree1.png')
 
@@ -2858,7 +3042,7 @@ function gonzalezM2Init(data) {
     let counterrr = 0;
 
     // snowflake class | Credit to Aatish Bhatia for snowflake motion equation
-    let snowW = 1000;
+    let snowW = 1500;
     let snowH = 2000;
     let snowflakes = []
     function snowflake() {
@@ -2927,7 +3111,7 @@ function gonzalezM2Init(data) {
         image(img, this.position.x / v, this.position.y / v)
 
         if (lit) {
-            translate(1750, 600)
+            translate(1500, 600)
             for (let flake of snowflakes) {
                 flake.update((1 / 60));
                 flake.display();
