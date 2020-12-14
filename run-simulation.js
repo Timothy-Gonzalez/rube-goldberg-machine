@@ -66,6 +66,7 @@ let Camera = {
 
 /* Detect inputs */
 
+let counter = 0;
 //Set key to pressed
 function simpleKeyPress(key, pressed) {
     switch (key) {
@@ -100,11 +101,26 @@ function simpleKeyPress(key, pressed) {
             }
             Camera.t += 0.25;
             break;
-        case 'Enter':
-            started = true;
+        case 'l':
+            if (pressed) {
+                break
+            }
+            counter ++;
+            if (counter <= 1) {
+                break
+            }
+            Camera.t += 1000;
             break;
     }
 }
+
+document.addEventListener('click', event => {
+    started = true;
+});
+
+document.addEventListener('touchend', event => {
+    started = true;
+});
 
 //Registers when key is pressed down
 document.addEventListener("keydown", event => {
@@ -330,11 +346,11 @@ function drawConstraint(constraint) {
     }
 }
 
-let volume = 0.05
+let volume = 0.1
 function draw() {
     if (started) {
         if (lit) {
-            volume -= (0.05) / 300
+            volume -= (0.1) / 300
             if (volume <= 0) {
                 volume = 0;
             }
@@ -679,7 +695,7 @@ function gonzalezM0(data) {
         textStyle(BOLD);
         textAlign(CENTER, CENTER);
         textSize(50);
-        text("Press ENTER to start", 0, 0)
+        text("CLICK to start", 0, 0)
         rectMode(CORNER)
         pop()
     }
