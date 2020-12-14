@@ -2921,6 +2921,9 @@ function gonzalezM2Init(data) {
         pointB: Vector.add(vector1, Vector.clone(lever.position)),
         stiffness: 1,
         length: 0,
+        render: {
+            visible: false,
+        },
     })
 
     let leverp2 = Bodies.circle(lx, ly, 40,{
@@ -2937,6 +2940,9 @@ function gonzalezM2Init(data) {
         pointA: Vector.create(-125, 0),
         stiffness: 1,
         length: 0,
+        render: {
+            visible: false,
+        },
     })
 
     worldAdd([constraint, lever, constraint2, leverp2])
