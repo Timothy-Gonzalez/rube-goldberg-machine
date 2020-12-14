@@ -156,6 +156,7 @@ function setup() {
     onUpdate = null;
 
     runNext = function() {
+        removeInit(menu)
         let gandhiM1 = shiftInit(gandhiM1Init, 8772, 9142);
         onUpdate = gandhiM1Update;
         World.remove(gonzalezM1.world, m1to2car)
@@ -3055,7 +3056,7 @@ function gonzalezM2Init(data) {
 
     // snowflake class | Credit to Aatish Bhatia for snowflake motion equation
     let snowW = 1500;
-    let snowH = 2000;
+    let snowH = 1000;
     let snowflakes = []
     function snowflake() {
         // initialize coordinates
