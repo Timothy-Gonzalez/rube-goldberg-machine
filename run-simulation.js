@@ -110,6 +110,12 @@ function simpleKeyPress(key, pressed) {
                 break
             }
             Camera.t += 1000;
+            for (const step of Camera.steps) {
+                if (step.untilNextStage) {
+                    step.time = 0;
+                    step.untilNextStage = undefined;
+                }
+            }
             break;
     }
 }
@@ -143,9 +149,50 @@ document.addEventListener("wheel", event => {
 })
 
 let runBefore = false;
-let modules = [];
+let currentModule = -1;
+let modules = [
+    {
+        init: gonzalezM0,
+        xOffset: -1000,
+        yOffset: -1000,
+        enabled: true,
+    },
+    {
+        init: gonzalezM1Init,
+        xOffset: 0,
+        yOffset: 0,
+        enabled: false,
+    },
+    {
+        init: gandhiM1Init,
+        onUpdate: gandhiM1Update,
+        transferTo: gonzalezM1ToGandhiM1,
+        xOffset: 8772,
+        yOffset: 9142,
+        enabled: false,
+    },
+    {
+        init: anandaniM1Init,
+        xOffset: 14050,
+        yOffset: 11350,
+        enabled: false,
+    },
+    {
+        init: anandaniM2Init,
+        transferTo: anandaniM1ToAnandaniM2,
+        xOffset: 19300,
+        yOffset: 12350,
+        enabled: false,
+    },
+    {
+        init: gonzalezM2Init,
+        xOffset: 27100,
+        yOffset: 12875,
+        enabled: false,
+    },
+];
 
-let runNext, onUpdate;
+let onUpdate;
 
 let started = false;
 
@@ -154,6 +201,23 @@ let soundPlaying = false
 
 let timeouts = [];
 
+function runNext() {
+    currentModule += 1;
+    let current = modules[currentModule]
+    if (!current) {
+        return
+    }
+
+    let previous = currentModule > 1 ? modules[currentModule - 1] : undefined;
+
+    if (previous) {
+        relTimeout(function() {
+            removeInit(previous)
+        }, 15 * 1000);
+    }
+
+    init(current, previous);
+}
 
 function setup() {
     if (runBefore) {
@@ -166,37 +230,9 @@ function setup() {
     createCanvas(actualW, actualH)
     console.log("Running inits")
 
-    let menu = shiftInit(gonzalezM0, -1000, -1000)
-
-    let gonzalezM1 = shiftInit(gonzalezM1Init, 0, 0);
-    onUpdate = null;
-
-    runNext = function() {
-        removeInit(menu)
-        let gandhiM1 = shiftInit(gandhiM1Init, 8772, 9142);
-        onUpdate = gandhiM1Update;
-        World.remove(gonzalezM1.world, m1to2car)
-        Composite.translate(m1to2car, Vector.create(-8772, -9142))
-        World.add(gandhiM1.world, m1to2car)
-
-        runNext = function() {
-            removeInit(gonzalezM1)
-            let anandaniM1 = shiftInit(anandaniM1Init, 14050, 11350);
-            onUpdate = null;
-            runNext = function() {
-                removeInit(gandhiM1)
-                let anandaniM2 = shiftInit(anandaniM2Init, 19300, 12350)
-                World.remove(anandaniM1.world, m3to4ball)
-                Body.translate(m3to4ball, Vector.create((anandaniM1.xOffset - anandaniM2.xOffset), (anandaniM1.yOffset - anandaniM2.yOffset)))
-                World.add(anandaniM2.world, m3to4ball)
-                runNext = function() {
-                    removeInit(anandaniM1)
-                    shiftInit(gonzalezM2Init, 27100, 12875)
-                }
-            }
-        }
-    }
-
+    // Start the menu & first world, but simulation won't actually start until menu ends
+    runNext();
+    runNext();
     // runNext();
     // runNext();
     // runNext();
@@ -217,13 +253,13 @@ function setup() {
     addStep(200, 1000, 0.5, 3.5)
     addStep(0, 2000, 0.5, 5)
     addStep(1150, 1000, 0.65, 3)
-    addStep(0, 0, 0.65, 3.15)
-    addStep(2000, 500, 0.5, 5)
-    addStep(500, 0, 0.75, 3.15)
-    addStep(0, 0, 0.75, 5)
-    addStep(650, -150, 1, 3)
-    addStep(0, 2000, 1, 14.5)
+    addStep(0, 0, 0.65, 0, 2);
     //Car moves to right
+    addStep(2000, 500, 0.5, 5);
+    addStep(500, 0, 0.75, 3.15);
+    addStep(0, 0, 0.75, 5);
+    addStep(650, -150, 1, 3);
+    addStep(0, 2000, 1, 14.5);
     addStep(1000, 0, 0.35, 3)
     addStep(2000, -200, 0.25, 3)
 
@@ -386,11 +422,12 @@ function draw() {
         sound.playbackRate = nums;
     }
 
+    let prevCameraT = Camera.t
 
         for (let i = 0; i < nums; i++) {
             for (let j = 0; j < modules.length; j++) {
                 let on = modules[j];
-                if (on && on.engine && !on.disabled && (started || j === 0)) {
+                if (on && on.engine && on.enabled && (started || j === 0)) {
                     Matter.Engine.update(on.engine, 1000 / 60, 1);
                 }
             }
@@ -422,7 +459,18 @@ function draw() {
             let timeLeft = Camera.t;
             for (let i = 1; i < Camera.steps.length; i++) {
                 let on = Camera.steps[i];
-                if (timeLeft > on.time) {
+                if (on.untilNextStage !== undefined) {
+                    // If on.untilNextStage, we want to mock a step that takes the current time spent on this stage
+                    on.time += Camera.t - prevCameraT;
+                    timeLeft -= on.time;
+                    if (on.untilNextStage === currentModule) {
+                        // Once we reach that stage, convert to a normal step that takes the time it took to get there
+                        onStep = i
+                        on.untilNextStage = undefined
+                    } else {
+                        break
+                    }
+                } else if (timeLeft > on.time) {
                     onStep = i;
                     posX += on.xDif;
                     posY += on.yDif;
@@ -488,7 +536,10 @@ function draw() {
         },
     }
 
-    modules.forEach((data) => {
+    modules.forEach((data, i) => {
+        if (i > currentModule) {
+            return
+        }
         function runTranslatedHandler(handler, obj) {
             push();
             translate(data.xOffset * scaleFactor, data.yOffset * scaleFactor)
@@ -517,33 +568,37 @@ function draw() {
     })
 }
 
-function addStep(xDif, yDif, scale, time) {
+function addStep(xDif, yDif, scale, time, untilNextStage) {
     Camera.steps.push({
         xDif: xDif,
         yDif: yDif,
         scale: scale,
         time: time,
+        untilNextStage: untilNextStage,
     })
 }
 
-function shiftInit(initFunction, xOffset, yOffset) {
+function init(module, prevModule) {
     let engine = Engine.create();
     let world = engine.world;
-    initFunction({
+
+    module.world = world;
+    module.engine = engine;
+    module.enabled = true;
+    onUpdate = undefined;
+
+    module.init({
         world: world,
         engine: engine,
     })
 
-    modules.push(
-        {
-            xOffset: xOffset,
-            yOffset: yOffset,
-            world: world,
-            engine: engine,
-        }
-    )
+    if (module.onUpdate) {
+        onUpdate = module.onUpdate;
+    }
 
-    return modules[modules.length - 1]
+    if (module.transferTo) {
+        module.transferTo(module, prevModule);
+    }
 
     /*
     Old code for singular-world model
@@ -595,7 +650,7 @@ function shiftInit(initFunction, xOffset, yOffset) {
 function removeInit(module) {
     //TODO: Make work with modules
 
-    module.disabled = true;
+    module.enabled = false;
 
     // obj.forEach(function(item) {
     //     World.remove(world, item)
@@ -1171,7 +1226,7 @@ function gonzalezM1Init(data) {
     }))
 
     for (let i = 0; i < 5; i++) {
-        let bin = createBin(8080 + (i * 33), 9310 + (i * 10), 32, 32, 10, i !== 4)
+        let bin = createBin(8080 + (i * 33), 9310 + (i * 12), 32, 32, 10, i !== 4)
 
         let already = false;
         Events.on(engine, "collisionStart", function (data) {
@@ -1242,6 +1297,18 @@ function gonzalezM1Init(data) {
             fillStyle: barrierColor,
         },
     }))
+}
+
+function gonzalezM1ToGandhiM1(module, prevModule) {
+    World.remove(prevModule.world, m1to2car);
+    Composite.translate(
+      m1to2car,
+      Vector.create(
+        prevModule.xOffset - module.xOffset,
+        prevModule.yOffset - module.yOffset
+      )
+    );
+    World.add(module.world, m1to2car);
 }
 
 /**
@@ -1861,13 +1928,25 @@ function anandaniM1Init(data) {
                         stackArray.forEach(element => Matter.World.remove(world, element))
                     }
                     runNext();
-                }, 4000)
+                }, 2000)
                 bool16=false
             }
         }
 
     })
 
+}
+
+function anandaniM1ToAnandaniM2(module, prevModule) {
+    World.remove(prevModule.world, m3to4ball);
+    Body.translate(
+        m3to4ball,
+        Vector.create(
+            prevModule.xOffset - module.xOffset,
+            prevModule.yOffset - module.yOffset
+        )
+    );
+    World.add(module.world, m3to4ball);
 }
 
 /**
