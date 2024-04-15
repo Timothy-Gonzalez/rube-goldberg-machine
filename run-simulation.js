@@ -53,6 +53,7 @@ let keyInputData = {
         offset: [1, 0],
     },
     speed: false,
+    pause: false,
 }
 
 let Camera = {
@@ -85,6 +86,12 @@ function simpleKeyPress(key, pressed) {
         case 'd':
         case 'ArrowRight':
             keyInputData.right.active = pressed;
+            break;
+        case ' ':
+            if (pressed) {
+                break;
+            }
+            keyInputData.pause = !keyInputData.pause;
             break;
         case 'e':
             keyInputData.speed = pressed;
@@ -416,6 +423,9 @@ function draw() {
     let nums = 1;
     if (keyInputData.speed) {
         nums = 15;
+    }
+    if (keyInputData.pause) {
+        nums = 0;
     }
 
     if (sound) {
